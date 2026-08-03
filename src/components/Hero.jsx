@@ -1,0 +1,67 @@
+import React, { useEffect, useState } from 'react';
+import BloomShape from './BloomShape';
+
+export default function Hero() {
+  const [orb1Transform, setOrb1Transform] = useState('translateY(0px)');
+  const [orb2Transform, setOrb2Transform] = useState('translateY(0px)');
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduceMotion && window.matchMedia('(hover:hover)').matches) {
+      const handleScroll = () => {
+        const y = window.scrollY;
+        setOrb1Transform(`translateY(${y * 0.15}px)`);
+        setOrb2Transform(`translateY(${y * 0.25}px)`);
+      };
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
+  return (
+    <header className="hero">
+      <div 
+        className="hero__orb" 
+        id="orb1" 
+        style={{ 
+          width: '340px', 
+          height: '340px', 
+          top: '8%', 
+          left: '-6%', 
+          background: 'radial-gradient(circle at 35% 30%, rgba(230,180,190,.6), transparent 70%)',
+          transform: orb1Transform
+        }} 
+      />
+      <div 
+        className="hero__orb" 
+        id="orb2" 
+        style={{ 
+          width: '260px', 
+          height: '260px', 
+          top: '18%', 
+          right: '-4%', 
+          background: 'radial-gradient(circle at 60% 40%, rgba(230,196,120,.5), transparent 70%)',
+          transform: orb2Transform
+        }} 
+      />
+      <div className="wrap">
+        <div className="hero__nav-space"></div>
+        <div className="hero__content">
+          <div className="hero__eyebrow label">
+            <BloomShape width="14" height="14" /> gardens for your skin
+          </div>
+          <h1 className="hero__wordmark" aria-label="Aurelia">
+            <span style={{ animationDelay: '.05s' }}>A</span>
+            <span style={{ animationDelay: '.1s' }}>u</span>
+            <span style={{ animationDelay: '.15s' }}>r</span>
+            <span style={{ animationDelay: '.2s' }}>e</span>
+            <span style={{ animationDelay: '.25s' }}>l</span>
+            <span style={{ animationDelay: '.3s' }}>i</span>
+            <span style={{ animationDelay: '.35s' }}>a</span>
+          </h1>
+          <p className="hero__tag">Quiet formulas for skin, hair and the everyday ritual in between — made to be felt, not performed.</p>
+        </div>
+      </div>
+    </header>
+  );
+}
