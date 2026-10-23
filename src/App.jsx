@@ -66,10 +66,11 @@ export default function App() {
     };
   }, []);
 
-  // Open the admin panel directly at yoursite.com/#admin
+  // The admin panel has no public button — open it at yoursite.com/admin (or /#admin)
   useEffect(() => {
     const openIfAdminHash = () => {
-      if (window.location.hash === '#admin') setIsAdminOpen(true);
+      const isAdminUrl = window.location.pathname.replace(/\/+$/, '') === '/admin' || window.location.hash === '#admin';
+      if (isAdminUrl) setIsAdminOpen(true);
     };
     openIfAdminHash();
     window.addEventListener('hashchange', openIfAdminHash);
@@ -239,7 +240,7 @@ export default function App() {
 
       <Promo />
 
-      <Footer onOpenAdmin={() => setIsAdminOpen(true)} />
+      <Footer />
 
       <CartDrawer
         cart={cart}

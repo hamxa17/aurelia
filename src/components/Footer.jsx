@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Footer({ onOpenAdmin }) {
+export default function Footer() {
   return (
     <footer>
       <div className="wrap">
@@ -38,20 +38,6 @@ export default function Footer({ onOpenAdmin }) {
         </div>
         <div className="footer__bottom">
           <span>© 2026 Aurelia. All rights reserved.</span>
-          <button 
-            onClick={onOpenAdmin} 
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              color: 'rgba(251,244,236,.4)', 
-              font: 'inherit', 
-              fontSize: '11px',
-              cursor: 'pointer', 
-              textDecoration: 'underline' 
-            }}
-          >
-            admin portal
-          </button>
           <span>Made for skin, not for shelves.</span>
         </div>
       </div>
