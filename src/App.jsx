@@ -77,6 +77,23 @@ export default function App() {
     return () => window.removeEventListener('hashchange', openIfAdminHash);
   }, []);
 
+  // Menu links only for sections that currently have products
+  const navLinks = [
+    hasItems(products.newArrivals) && { href: '#new-arrivals', label: 'New' },
+    hasItems(products.skincare) && { href: '#skincare', label: 'Skincare' },
+    hasItems(products.haircare) && { href: '#haircare', label: 'Hair' },
+    hasItems(products.supplements) && { href: '#supplements', label: 'Supplements' },
+    hasItems(products.lipbalm) && { href: '#lipbalm', label: 'Lip' },
+    { href: '#philosophy', label: 'Learn' },
+  ].filter(Boolean);
+
+  // Close the phone menu if the window grows to desktop size while it's open
+  useEffect(() => {
+    const onResize = () => { if (window.innerWidth > 720) setIsMenuOpen(false); };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   const quickViewProduct = activeQuickViewId
     ? productList.find((p) => p.id === activeQuickViewId) || null
     : null;
@@ -151,13 +168,14 @@ export default function App() {
   return (
     <div id="top">
       <Navbar
+        links={navLinks}
         cartCount={totalCartCount}
         isPulsing={isPulsing}
         onOpenCart={() => setIsCartOpen(true)}
         onToggleMenu={() => setIsMenuOpen((prev) => !prev)}
       />
 
-      <MobileMenu onClose={() => setIsMenuOpen(false)} />
+      <MobileMenu links={navLinks} onClose={() => setIsMenuOpen(false)} />
 
       <Hero />
 
