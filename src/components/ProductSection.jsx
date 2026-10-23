@@ -10,12 +10,14 @@ export default function ProductSection({
   products,
   isTabbed = false,
   isHorizontalScroll = false,
-  prefix = 'prod',
   bgPaper = false,
   onAddToCart,
   onOpenQuickView
 }) {
-  const [activeTab, setActiveTab] = useState(isTabbed && products ? Object.keys(products)[0] : null);
+  const [selectedTab, setSelectedTab] = useState(null);
+  const categories = isTabbed && products ? Object.keys(products) : [];
+  // Fall back to the first tab if the chosen one disappears (e.g. its last product was deleted)
+  const activeTab = categories.includes(selectedTab) ? selectedTab : categories[0] || null;
   const sectionRef = useRef(null);
 
   useEffect(() => {
@@ -37,9 +39,7 @@ export default function ProductSection({
     }
 
     return () => observer.disconnect();
-  }, [activeTab]);
-
-  const categories = isTabbed && products ? Object.keys(products) : [];
+  }, [activeTab, products]);
 
   return (
     <section 
@@ -66,7 +66,7 @@ export default function ProductSection({
                 <button
                   key={cat}
                   className={`tab ${activeTab === cat ? 'active' : ''}`}
-                  onClick={() => setActiveTab(cat)}
+                  onClick={() => setSelectedTab(cat)}
                 >
                   {cat}
                 </button>
@@ -79,10 +79,10 @@ export default function ProductSection({
                 className={`tab-panel ${activeTab === cat ? 'active' : ''}`}
               >
                 <div className="grid" data-reveal-stagger>
-                  {products[cat].map((prod, j) => (
+                  {products[cat].map((prod) => (
                     <ProductCard
-                      key={`${prefix}-${cat}-${j}`}
-                      id={`${prefix}-${cat.replace(/\s/g, '')}-${j}`}
+                      key={prod.id}
+                      id={prod.id}
                       product={prod}
                       onAddToCart={onAddToCart}
                       onOpenQuickView={onOpenQuickView}
@@ -94,10 +94,10 @@ export default function ProductSection({
           </>
         ) : isHorizontalScroll ? (
           <div className="hscroll" id={`${id}Row`}>
-            {products.map((prod, i) => (
+            {products.map((prod) => (
               <ProductCard
-                key={`${prefix}-${i}`}
-                id={`${prefix}-${i}`}
+                key={prod.id}
+                id={prod.id}
                 product={prod}
                 onAddToCart={onAddToCart}
                 onOpenQuickView={onOpenQuickView}
@@ -106,10 +106,10 @@ export default function ProductSection({
           </div>
         ) : (
           <div className="grid" data-reveal-stagger>
-            {products.map((prod, i) => (
+            {products.map((prod) => (
               <ProductCard
-                key={`${prefix}-${i}`}
-                id={`${prefix}-${i}`}
+                key={prod.id}
+                id={prod.id}
                 product={prod}
                 onAddToCart={onAddToCart}
                 onOpenQuickView={onOpenQuickView}

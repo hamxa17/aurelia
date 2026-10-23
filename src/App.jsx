@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { loadProducts, saveProducts, resetProducts, findProductById } from './data/products';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { fetchProducts, groupProducts, getCurrentSession, checkIsAdmin } from './data/catalog';
+import { supabase } from './lib/supabase';
 import Navbar from './components/Navbar';
 import MobileMenu from './components/MobileMenu';
 import Hero from './components/Hero';
@@ -13,7 +14,9 @@ import QuickViewModal from './components/QuickViewModal';
 import AdminModal from './components/AdminModal';
 
 export default function App() {
-  const [products, setProducts] = useState(loadProducts);
+  const [productList, setProductList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [cart, setCart] = useState({}); // { [id]: { product, qty } }
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -24,10 +27,54 @@ export default function App() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
 
-  // Save products to localStorage whenever products state changes
+  const products = useMemo(() => groupProducts(productList), [productList]);
+
+  const reloadProducts = useCallback(async () => {
+    try {
+      const list = await fetchProducts();
+      setProductList(list);
+      setLoadError('');
+    } catch (err) {
+      console.error('Could not load products:', err);
+      setLoadError('We could not load the products right now. Please refresh in a moment.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    saveProducts(products);
-  }, [products]);
+    reloadProducts();
+  }, [reloadProducts]);
+
+  // Restore an admin session after a page refresh, and react to sign-in / sign-out
+  useEffect(() => {
+    let active = true;
+    getCurrentSession().then(async (session) => {
+      if (active && session) setIsAdminAuthenticated(await checkIsAdmin());
+    });
+    if (!supabase) return () => { active = false; };
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') setIsAdminAuthenticated(false);
+    });
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Open the admin panel directly at yoursite.com/#admin
+  useEffect(() => {
+    const openIfAdminHash = () => {
+      if (window.location.hash === '#admin') setIsAdminOpen(true);
+    };
+    openIfAdminHash();
+    window.addEventListener('hashchange', openIfAdminHash);
+    return () => window.removeEventListener('hashchange', openIfAdminHash);
+  }, []);
+
+  const quickViewProduct = activeQuickViewId
+    ? productList.find((p) => p.id === activeQuickViewId) || null
+    : null;
 
   // Sync body CSS classes for modal/drawer visibility
   useEffect(() => {
@@ -96,72 +143,6 @@ export default function App() {
     });
   };
 
-  // --- Admin Product CRUD Handlers ---
-
-  const handleAddProduct = (targetCategory, productData) => {
-    setProducts((prev) => {
-      const next = JSON.parse(JSON.stringify(prev));
-      if (targetCategory === 'newArrivals') {
-        next.newArrivals.unshift(productData);
-      } else if (targetCategory.startsWith('skincare:')) {
-        const subCat = targetCategory.split(':')[1];
-        if (!next.skincare[subCat]) next.skincare[subCat] = [];
-        next.skincare[subCat].unshift(productData);
-      } else if (targetCategory.startsWith('haircare:')) {
-        const subCat = targetCategory.split(':')[1];
-        if (!next.haircare[subCat]) next.haircare[subCat] = [];
-        next.haircare[subCat].unshift(productData);
-      } else if (targetCategory === 'supplements') {
-        next.supplements.unshift(productData);
-      } else if (targetCategory === 'lipbalm') {
-        next.lipbalm.unshift(productData);
-      }
-      return next;
-    });
-  };
-
-  const handleDeleteProduct = (id, categoryKey) => {
-    setProducts((prev) => {
-      const next = JSON.parse(JSON.stringify(prev));
-
-      const removeFromArray = (arr, index) => {
-        if (arr && index >= 0 && index < arr.length) {
-          arr.splice(index, 1);
-        }
-      };
-
-      if (categoryKey === 'newArrivals') {
-        const idx = parseInt(id.replace('new-', ''));
-        removeFromArray(next.newArrivals, idx);
-      } else if (categoryKey.startsWith('skincare:')) {
-        const subCat = categoryKey.split(':')[1];
-        const match = id.match(/skin-.*-(\d+)/);
-        if (match) removeFromArray(next.skincare[subCat], parseInt(match[1]));
-      } else if (categoryKey.startsWith('haircare:')) {
-        const subCat = categoryKey.split(':')[1];
-        const match = id.match(/hair-.*-(\d+)/);
-        if (match) removeFromArray(next.haircare[subCat], parseInt(match[1]));
-      } else if (categoryKey === 'supplements') {
-        const idx = parseInt(id.replace('supp-', ''));
-        removeFromArray(next.supplements, idx);
-      } else if (categoryKey === 'lipbalm') {
-        const idx = parseInt(id.replace('lip-', ''));
-        removeFromArray(next.lipbalm, idx);
-      }
-      return next;
-    });
-  };
-
-  const handleUpdateProduct = (id, oldCategoryKey, newCategoryKey, productData) => {
-    handleDeleteProduct(id, oldCategoryKey);
-    handleAddProduct(newCategoryKey, productData);
-  };
-
-  const handleResetCatalog = () => {
-    const defaultData = resetProducts();
-    setProducts(defaultData);
-  };
-
   return (
     <div id="top">
       <Navbar
@@ -177,6 +158,13 @@ export default function App() {
 
       <Marquee />
 
+      {loadError && (
+        <div className="wrap" role="alert" style={{ padding: '24px 0', textAlign: 'center', color: 'var(--rose-deep)' }}>
+          {loadError}
+        </div>
+      )}
+
+      {!isLoading && (<>
       <ProductSection
         id="new-arrivals"
         title="New arrivals"
@@ -184,7 +172,6 @@ export default function App() {
         description="The newest formulas in rotation — small batch, restocked often."
         products={products.newArrivals || []}
         isHorizontalScroll={true}
-        prefix="new"
         onAddToCart={handleAddToCart}
         onOpenQuickView={setActiveQuickViewId}
       />
@@ -198,7 +185,6 @@ export default function App() {
         description="Five categories, one goal: skin that behaves without a ten-step ritual."
         products={products.skincare || {}}
         isTabbed={true}
-        prefix="skin"
         onAddToCart={handleAddToCart}
         onOpenQuickView={setActiveQuickViewId}
       />
@@ -210,7 +196,6 @@ export default function App() {
         description="Bond-level repair, wash-day treatments, and masks for the in-between."
         products={products.haircare || {}}
         isTabbed={true}
-        prefix="hair"
         bgPaper={true}
         onAddToCart={handleAddToCart}
         onOpenQuickView={setActiveQuickViewId}
@@ -222,7 +207,6 @@ export default function App() {
         tagline="from within"
         description="Because skin starts before the mirror."
         products={products.supplements || []}
-        prefix="supp"
         onAddToCart={handleAddToCart}
         onOpenQuickView={setActiveQuickViewId}
       />
@@ -233,11 +217,11 @@ export default function App() {
         tagline="lip"
         description="Small tubes, big habit."
         products={products.lipbalm || []}
-        prefix="lip"
         bgPaper={true}
         onAddToCart={handleAddToCart}
         onOpenQuickView={setActiveQuickViewId}
       />
+      </>)}
 
       <Promo />
 
@@ -251,7 +235,8 @@ export default function App() {
       />
 
       <QuickViewModal
-        productId={activeQuickViewId}
+        key={activeQuickViewId || 'none'}
+        product={quickViewProduct}
         onClose={() => setActiveQuickViewId(null)}
         onAddToCart={(id, product, qty) => {
           handleAddToCart(id, product, qty);
@@ -264,11 +249,8 @@ export default function App() {
         isAuthenticated={isAdminAuthenticated}
         onAuthenticate={setIsAdminAuthenticated}
         onClose={() => setIsAdminOpen(false)}
-        products={products}
-        onAddProduct={handleAddProduct}
-        onUpdateProduct={handleUpdateProduct}
-        onDeleteProduct={handleDeleteProduct}
-        onResetProducts={handleResetCatalog}
+        products={productList}
+        onCatalogChanged={reloadProducts}
       />
     </div>
   );

@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
-import { ACCENTS, getProductDetails, findProductById } from '../data/products';
+import { ACCENTS, getProductDetails } from '../data/products';
 import BloomShape from './BloomShape';
 
-export default function QuickViewModal({ productId, onClose, onAddToCart }) {
+export default function QuickViewModal({ product, onClose, onAddToCart }) {
   const [activeTab, setActiveTab] = useState('details');
   const [stepperVal, setStepperVal] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
 
-  if (!productId) return null;
-
-  const product = findProductById(productId);
   if (!product) return null;
 
   const details = getProductDetails(product.name, product.note);
@@ -24,7 +21,7 @@ export default function QuickViewModal({ productId, onClose, onAddToCart }) {
   };
 
   const handleAdd = () => {
-    onAddToCart(productId, product, stepperVal);
+    onAddToCart(product.id, product, stepperVal);
     setIsAdded(true);
     setTimeout(() => {
       setIsAdded(false);
@@ -82,7 +79,7 @@ export default function QuickViewModal({ productId, onClose, onAddToCart }) {
             </div>
 
             <div className={`qv-panel ${activeTab === 'details' ? 'active' : ''}`}>
-              <p>{product.details?.description || details.description}</p>
+              <p>{product.description || details.description}</p>
             </div>
 
             <div className={`qv-panel ${activeTab === 'reviews' ? 'active' : ''}`}>

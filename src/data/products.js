@@ -81,10 +81,12 @@ export function getProductDetails(name, note) {
   };
 }
 
-function p(name, price, note, accent, badge, details = null){ 
-  return {name, price: Number(price), note, accent, badge, details}; 
+function p(name, price, note, accent, badge){
+  return {name, price: Number(price), note, accent, badge};
 }
 
+// Starter catalog. Used only as a preview when the database isn't connected yet,
+// and as the source for supabase/seed.sql.
 export const INITIAL_PRODUCTS = {
   newArrivals: [
     p('Cleanser', 240, 'Gel-to-milk everyday facewash', 'rose', 'New'),
@@ -151,61 +153,3 @@ export const INITIAL_PRODUCTS = {
     p('Lip Balm', 110, 'SPF20 daily lip balm', 'clay'),
   ],
 };
-
-const STORAGE_KEY = 'aurelia_products_data';
-const ADMIN_PASS_KEY = 'aurelia_admin_password';
-
-export function loadProducts() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      return JSON.parse(saved);
-    }
-  } catch (e) {
-    console.error('Error loading products from localStorage:', e);
-  }
-  return INITIAL_PRODUCTS;
-}
-
-export function saveProducts(products) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-  } catch (e) {
-    console.error('Error saving products to localStorage:', e);
-  }
-}
-
-export function resetProducts() {
-  localStorage.removeItem(STORAGE_KEY);
-  return INITIAL_PRODUCTS;
-}
-
-export function getAdminPassword() {
-  return localStorage.getItem(ADMIN_PASS_KEY) || 'aurelia123';
-}
-
-export function setAdminPassword(newPassword) {
-  localStorage.setItem(ADMIN_PASS_KEY, newPassword);
-}
-
-export function findProductById(id, productsData = null) {
-  const data = productsData || loadProducts();
-  const all = [
-    ...(data.newArrivals || []).map((pr, i) => ['new-' + i, pr]),
-    ...(data.supplements || []).map((pr, i) => ['supp-' + i, pr]),
-    ...(data.lipbalm || []).map((pr, i) => ['lip-' + i, pr]),
-  ];
-  
-  if (data.skincare) {
-    Object.entries(data.skincare).forEach(([cat, list]) =>
-      list.forEach((pr, i) => all.push(['skin-' + cat.replace(/\s/g, '') + '-' + i, pr]))
-    );
-  }
-  if (data.haircare) {
-    Object.entries(data.haircare).forEach(([cat, list]) =>
-      list.forEach((pr, i) => all.push(['hair-' + cat.replace(/\s/g, '') + '-' + i, pr]))
-    );
-  }
-  const found = all.find(([pid]) => pid === id);
-  return found ? found[1] : null;
-}

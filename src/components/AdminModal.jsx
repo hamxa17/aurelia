@@ -1,5 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { ACCENTS, getAdminPassword, setAdminPassword } from '../data/products';
+import { ACCENTS } from '../data/products';
+import {
+  CATEGORY_OPTIONS,
+  categoryKeyOf,
+  categoryLabelOf,
+  parseCategoryKey,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  uploadProductImage,
+  signInAdmin,
+  signOutAdmin,
+  changeAdminPassword,
+} from '../data/catalog';
+import { isSupabaseConfigured } from '../lib/supabase';
 import BloomShape from './BloomShape';
 
 export default function AdminModal({ 
@@ -7,14 +21,15 @@ export default function AdminModal({
   isAuthenticated, 
   onAuthenticate, 
   onClose, 
-  products, 
-  onAddProduct, 
-  onUpdateProduct, 
-  onDeleteProduct, 
-  onResetProducts 
+  products,
+  onCatalogChanged
 }) {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passError, setPassError] = useState('');
+  const [isBusy, setIsBusy] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [formError, setFormError] = useState('');
   const [activeTab, setActiveTab] = useState('manage'); // 'manage' | 'add' | 'settings'
 
   // Form State for Add / Edit
@@ -31,42 +46,57 @@ export default function AdminModal({
 
   // Settings State
   const [newPass, setNewPass] = useState('');
+  const [newPassConfirm, setNewPassConfirm] = useState('');
   const [passChangeSuccess, setPassChangeSuccess] = useState('');
+  const [passChangeError, setPassChangeError] = useState('');
 
   useEffect(() => {
     if (!isOpen) {
       setPassword('');
       setPassError('');
       setFormSuccess('');
+      setFormError('');
       setEditingId(null);
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (password === getAdminPassword()) {
+    setIsBusy(true);
+    setPassError('');
+    try {
+      await signInAdmin(email, password);
       onAuthenticate(true);
-      setPassError('');
       setPassword('');
-    } else {
-      setPassError('Incorrect admin password. Please try again.');
+    } catch (err) {
+      setPassError(err.message || 'Could not sign in.');
+    } finally {
+      setIsBusy(false);
     }
   };
 
-  const handleStartEdit = (id, prod, categoryKey) => {
-    setEditingId({ id, categoryKey });
+  const handleSignOut = async () => {
+    await signOutAdmin();
+    onAuthenticate(false);
+    resetForm();
+    setActiveTab('manage');
+  };
+
+  const handleStartEdit = (prod) => {
+    setEditingId(prod.id);
     setFormName(prod.name || '');
-    setFormCategory(categoryKey);
-    setFormPrice(prod.price || '');
+    setFormCategory(categoryKeyOf(prod));
+    setFormPrice(prod.price ?? '');
     setFormNote(prod.note || '');
     setFormAccent(prod.accent || 'rose');
     setFormBadge(prod.badge || '');
     setFormImage(prod.image || '');
-    setFormDescription(prod.details?.description || '');
+    setFormDescription(prod.description || '');
     setActiveTab('add');
     setFormSuccess('');
+    setFormError('');
   };
 
   const resetForm = () => {
@@ -79,88 +109,101 @@ export default function AdminModal({
     setFormBadge('');
     setFormImage('');
     setFormDescription('');
+    setFormError('');
   };
 
-  const handleImageFileChange = (e) => {
+  // Images go to cloud storage; only the link is saved with the product
+  const handleImageFileChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+    e.target.value = '';
+    if (!file) return;
+    setFormError('');
+    setIsUploading(true);
+    try {
+      setFormImage(await uploadProductImage(file));
+    } catch (err) {
+      setFormError(err.message || 'Image upload failed.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const handleSubmitForm = (e) => {
+  const handleSubmitForm = async (e) => {
     e.preventDefault();
-    if (!formName.trim() || !formPrice) return;
+    if (!formName.trim() || formPrice === '' || isBusy || isUploading) return;
+    if (formImage && !/^https:\/\//i.test(formImage)) {
+      setFormError('Image link must start with https://');
+      return;
+    }
 
     const productData = {
-      name: formName.trim(),
+      name: formName,
       price: parseFloat(formPrice),
       note: formNote.trim() || 'Formulated for your daily ritual',
       accent: formAccent,
-      badge: formBadge.trim() || undefined,
-      image: formImage || undefined,
-      details: {
-        description: formDescription.trim()
-      }
+      badge: formBadge,
+      image: formImage,
+      description: formDescription,
+      ...parseCategoryKey(formCategory),
     };
 
-    if (editingId) {
-      onUpdateProduct(editingId.id, editingId.categoryKey, formCategory, productData);
-      setFormSuccess('Product updated successfully!');
-    } else {
-      onAddProduct(formCategory, productData);
-      setFormSuccess('New product added to catalog successfully!');
+    setIsBusy(true);
+    setFormError('');
+    try {
+      if (editingId) {
+        await updateProduct(editingId, productData);
+        setFormSuccess('Product updated — it is live for everyone now.');
+      } else {
+        await createProduct(productData);
+        setFormSuccess('Product published — it is live for everyone now.');
+      }
+      await onCatalogChanged();
+      setTimeout(() => {
+        setFormSuccess('');
+        resetForm();
+        setActiveTab('manage');
+      }, 1200);
+    } catch (err) {
+      setFormError(friendlyError(err));
+    } finally {
+      setIsBusy(false);
     }
-
-    setTimeout(() => {
-      setFormSuccess('');
-      resetForm();
-      setActiveTab('manage');
-    }, 1200);
   };
 
-  const handleChangePassword = (e) => {
+  const handleDelete = async (prod) => {
+    if (!window.confirm(`Are you sure you want to delete "${prod.name}"? This removes it for everyone.`)) return;
+    setFormError('');
+    try {
+      await deleteProduct(prod.id);
+      await onCatalogChanged();
+    } catch (err) {
+      setFormError(friendlyError(err));
+    }
+  };
+
+  const handleChangePassword = async (e) => {
     e.preventDefault();
-    if (newPass.trim().length < 4) {
-      alert('Password must be at least 4 characters long.');
+    setPassChangeError('');
+    if (newPass.length < 10) {
+      setPassChangeError('Use at least 10 characters.');
       return;
     }
-    setAdminPassword(newPass.trim());
-    setPassChangeSuccess('Admin password updated successfully!');
-    setNewPass('');
-    setTimeout(() => setPassChangeSuccess(''), 2000);
+    if (newPass !== newPassConfirm) {
+      setPassChangeError('The two passwords do not match.');
+      return;
+    }
+    try {
+      await changeAdminPassword(newPass);
+      setPassChangeSuccess('Password updated.');
+      setNewPass('');
+      setNewPassConfirm('');
+      setTimeout(() => setPassChangeSuccess(''), 2500);
+    } catch (err) {
+      setPassChangeError(err.message || 'Could not update the password.');
+    }
   };
 
-  // Flatten all current products for manager view
-  const getAllProductList = () => {
-    const list = [];
-    if (products.newArrivals) {
-      products.newArrivals.forEach((pr, i) => list.push({ id: `new-${i}`, categoryKey: 'newArrivals', categoryLabel: 'New Arrivals', item: pr }));
-    }
-    if (products.skincare) {
-      Object.entries(products.skincare).forEach(([cat, items]) => {
-        items.forEach((pr, i) => list.push({ id: `skin-${cat.replace(/\s/g, '')}-${i}`, categoryKey: `skincare:${cat}`, categoryLabel: `Skincare (${cat})`, item: pr }));
-      });
-    }
-    if (products.haircare) {
-      Object.entries(products.haircare).forEach(([cat, items]) => {
-        items.forEach((pr, i) => list.push({ id: `hair-${cat.replace(/\s/g, '')}-${i}`, categoryKey: `haircare:${cat}`, categoryLabel: `Hair care (${cat})`, item: pr }));
-      });
-    }
-    if (products.supplements) {
-      products.supplements.forEach((pr, i) => list.push({ id: `supp-${i}`, categoryKey: 'supplements', categoryLabel: 'Supplements', item: pr }));
-    }
-    if (products.lipbalm) {
-      products.lipbalm.forEach((pr, i) => list.push({ id: `lip-${i}`, categoryKey: 'lipbalm', categoryLabel: 'Lip balm', item: pr }));
-    }
-    return list;
-  };
-
-  const allItems = getAllProductList();
+  const allItems = products;
 
   return (
     <>
@@ -173,21 +216,41 @@ export default function AdminModal({
             <div className="admin-auth-icon">
               <BloomShape width="36" height="36" style={{ color: 'var(--gold)' }} />
             </div>
-            <h2 className="admin-title">Admin Access Portal</h2>
-            <p className="admin-sub">Enter the secret admin password to manage products and store catalog.</p>
-            
-            <form onSubmit={handleLogin} className="admin-form">
-              <input 
-                type="password" 
-                placeholder="Enter admin password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="admin-input"
-                autoFocus
-              />
-              {passError && <div className="admin-error">{passError}</div>}
-              <button type="submit" className="admin-btn">Unlock Portal</button>
-            </form>
+            <h2 className="admin-title">Admin sign in</h2>
+            {!isSupabaseConfigured ? (
+              <p className="admin-sub">
+                The store database isn't connected yet, so editing is switched off. Follow SETUP.md to connect it.
+              </p>
+            ) : (
+              <>
+                <p className="admin-sub">Sign in with the store owner account to manage products.</p>
+                <form onSubmit={handleLogin} className="admin-form">
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    autoComplete="username"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="admin-input"
+                    required
+                    autoFocus
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="admin-input"
+                    required
+                  />
+                  {passError && <div className="admin-error">{passError}</div>}
+                  <button type="submit" className="admin-btn" disabled={isBusy}>
+                    {isBusy ? 'Signing in…' : 'Sign in'}
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         ) : (
           <div className="admin-panel-view">
@@ -215,11 +278,15 @@ export default function AdminModal({
                 >
                   Settings
                 </button>
+                <button className="admin-tab" onClick={handleSignOut}>
+                  Sign out
+                </button>
               </div>
             </div>
 
             <div className="admin-content">
               {formSuccess && <div className="admin-success-banner">{formSuccess}</div>}
+              {formError && <div className="admin-error" role="alert" style={{ marginBottom: '12px' }}>{formError}</div>}
 
               {activeTab === 'manage' && (
                 <div className="admin-manage-list">
@@ -242,8 +309,8 @@ export default function AdminModal({
                         </tr>
                       </thead>
                       <tbody>
-                        {allItems.map(({ id, categoryKey, categoryLabel, item }) => (
-                          <tr key={id}>
+                        {allItems.map((item) => (
+                          <tr key={item.id}>
                             <td>
                               <div className="admin-item-cell">
                                 {item.image ? (
@@ -261,23 +328,19 @@ export default function AdminModal({
                                 </div>
                               </div>
                             </td>
-                            <td><span className="admin-cat-badge">{categoryLabel}</span></td>
+                            <td><span className="admin-cat-badge">{categoryLabelOf(item)}</span></td>
                             <td><strong>৳{Number(item.price).toFixed(2)}</strong></td>
                             <td>{item.badge ? <span className="card__badge">{item.badge}</span> : '—'}</td>
                             <td style={{ textAlign: 'right' }}>
                               <button 
                                 className="admin-action-edit"
-                                onClick={() => handleStartEdit(id, item, categoryKey)}
+                                onClick={() => handleStartEdit(item)}
                               >
                                 Edit
                               </button>
                               <button 
                                 className="admin-action-delete"
-                                onClick={() => {
-                                  if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
-                                    onDeleteProduct(id, categoryKey);
-                                  }
-                                }}
+                                onClick={() => handleDelete(item)}
                               >
                                 Delete
                               </button>
@@ -328,21 +391,19 @@ export default function AdminModal({
                         onChange={(e) => setFormCategory(e.target.value)}
                         className="admin-input"
                       >
-                        <option value="newArrivals">New Arrivals</option>
-                        <optgroup label="Skincare">
-                          <option value="skincare:Facewash">Skincare — Facewash</option>
-                          <option value="skincare:Face Scrub">Skincare — Face Scrub</option>
-                          <option value="skincare:Facial Serum">Skincare — Facial Serum</option>
-                          <option value="skincare:Sunscreen">Skincare — Sunscreen</option>
-                          <option value="skincare:Super Whips">Skincare — Super Whips</option>
-                        </optgroup>
-                        <optgroup label="Haircare">
-                          <option value="haircare:Hair Treatments">Haircare — Hair Treatments</option>
-                          <option value="haircare:Power Bonds">Haircare — Power Bonds</option>
-                          <option value="haircare:Hair Masks">Haircare — Hair Masks</option>
-                        </optgroup>
-                        <option value="supplements">Supplements</option>
-                        <option value="lipbalm">Lip Balm</option>
+                        {CATEGORY_OPTIONS.filter((o) => !o.group).slice(0, 1).map((o) => (
+                          <option key={o.value} value={o.value}>{o.label}</option>
+                        ))}
+                        {['Skincare', 'Haircare'].map((group) => (
+                          <optgroup key={group} label={group}>
+                            {CATEGORY_OPTIONS.filter((o) => o.group === group).map((o) => (
+                              <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                          </optgroup>
+                        ))}
+                        {CATEGORY_OPTIONS.filter((o) => !o.group).slice(1).map((o) => (
+                          <option key={o.value} value={o.value}>{o.label}</option>
+                        ))}
                       </select>
                     </div>
 
@@ -391,8 +452,9 @@ export default function AdminModal({
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
                       <input 
                         type="file" 
-                        accept="image/*" 
+                        accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
                         onChange={handleImageFileChange}
+                        disabled={isUploading}
                         className="admin-input"
                         style={{ flex: 1 }}
                       />
@@ -414,13 +476,14 @@ export default function AdminModal({
                         </div>
                       )}
                     </div>
+                    {isUploading && <div className="admin-success" style={{ marginTop: '6px' }}>Uploading image…</div>}
                     <div style={{ fontSize: '11px', color: 'var(--ink-soft)', marginTop: '4px' }}>
-                      Or paste image URL:
+                      Max 3 MB. Or paste an image link (https://):
                     </div>
                     <input 
                       type="url" 
                       placeholder="https://example.com/product.jpg" 
-                      value={formImage.startsWith('data:') ? '' : formImage}
+                      value={formImage}
                       onChange={(e) => setFormImage(e.target.value)}
                       className="admin-input"
                       style={{ marginTop: '4px' }}
@@ -439,8 +502,8 @@ export default function AdminModal({
                   </div>
 
                   <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
-                    <button type="submit" className="admin-btn">
-                      {editingId ? 'Save Changes' : 'Publish Product to Store'}
+                    <button type="submit" className="admin-btn" disabled={isBusy || isUploading}>
+                      {isBusy ? 'Saving…' : editingId ? 'Save Changes' : 'Publish Product to Store'}
                     </button>
                     {editingId && (
                       <button type="button" className="admin-btn-secondary" onClick={resetForm}>
@@ -456,39 +519,28 @@ export default function AdminModal({
                   <h3>Admin Portal Settings</h3>
                   
                   <div className="admin-card-box" style={{ marginTop: '18px' }}>
-                    <h4>Change Admin Password</h4>
-                    <form onSubmit={handleChangePassword} style={{ marginTop: '12px' }}>
-                      <input 
-                        type="password" 
-                        placeholder="Enter new password"
+                    <h4>Change your password</h4>
+                    <form onSubmit={handleChangePassword} style={{ marginTop: '12px', display: 'grid', gap: '8px', maxWidth: '300px' }}>
+                      <input
+                        type="password"
+                        placeholder="New password (10+ characters)"
+                        autoComplete="new-password"
                         value={newPass}
                         onChange={(e) => setNewPass(e.target.value)}
                         className="admin-input"
-                        style={{ maxWidth: '300px' }}
                       />
-                      {passChangeSuccess && <div className="admin-success" style={{ marginTop: '8px' }}>{passChangeSuccess}</div>}
-                      <button type="submit" className="admin-btn" style={{ marginTop: '12px' }}>Update Password</button>
+                      <input
+                        type="password"
+                        placeholder="Type it again"
+                        autoComplete="new-password"
+                        value={newPassConfirm}
+                        onChange={(e) => setNewPassConfirm(e.target.value)}
+                        className="admin-input"
+                      />
+                      {passChangeError && <div className="admin-error">{passChangeError}</div>}
+                      {passChangeSuccess && <div className="admin-success">{passChangeSuccess}</div>}
+                      <button type="submit" className="admin-btn" style={{ marginTop: '4px' }}>Update Password</button>
                     </form>
-                  </div>
-
-                  <div className="admin-card-box" style={{ marginTop: '20px', borderColor: 'var(--rose-deep)' }}>
-                    <h4 style={{ color: 'var(--rose-deep)' }}>Reset Catalog to Default</h4>
-                    <p style={{ fontSize: '13.5px', marginTop: '6px', color: 'var(--ink-soft)' }}>
-                      Restores the original products and removes all custom added or edited items from browser storage.
-                    </p>
-                    <button 
-                      className="admin-action-delete" 
-                      style={{ marginTop: '14px', padding: '10px 18px', fontSize: '13px' }}
-                      onClick={() => {
-                        if (window.confirm('Are you sure you want to reset all products back to original defaults? All custom changes will be erased.')) {
-                          onResetProducts();
-                          alert('Catalog reset to factory defaults.');
-                          setActiveTab('manage');
-                        }
-                      }}
-                    >
-                      Reset Entire Store Catalog
-                    </button>
                   </div>
                 </div>
               )}
@@ -498,4 +550,12 @@ export default function AdminModal({
       </div>
     </>
   );
+}
+
+function friendlyError(err) {
+  const msg = err?.message || '';
+  if (/row-level security|permission denied|JWT/i.test(msg)) {
+    return 'You are not allowed to do that. Try signing out and back in.';
+  }
+  return msg || 'Something went wrong. Please try again.';
 }
