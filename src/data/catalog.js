@@ -6,8 +6,8 @@ export const MAX_IMAGE_BYTES = 3 * 1024 * 1024; // keep in sync with schema.sql
 
 // Order of the tabs inside "For the face" / "For the hair"
 export const SUBCATEGORIES = {
-  skincare: ['Facewash', 'Face Scrub', 'Facial Serum', 'Sunscreen', 'Super Whips'],
-  haircare: ['Hair Treatments', 'Power Bonds', 'Hair Masks'],
+  skincare: ['Facewash', 'Face Scrub', 'Facial Serum', 'Moisturiser', 'Sunscreen', 'Super Whips', 'Body Care'],
+  haircare: ['Shampoo', 'Conditioner', 'Hair Treatments', 'Power Bonds', 'Hair Masks'],
 };
 
 export const CATEGORY_OPTIONS = [

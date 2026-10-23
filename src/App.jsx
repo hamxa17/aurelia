@@ -13,6 +13,10 @@ import CartDrawer from './components/CartDrawer';
 import QuickViewModal from './components/QuickViewModal';
 import AdminModal from './components/AdminModal';
 
+// Hide a section entirely when it has no products yet
+const hasItems = (group) =>
+  Array.isArray(group) ? group.length > 0 : Boolean(group) && Object.keys(group).length > 0;
+
 export default function App() {
   const [productList, setProductList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -165,6 +169,7 @@ export default function App() {
       )}
 
       {!isLoading && (<>
+      {hasItems(products.newArrivals) && (
       <ProductSection
         id="new-arrivals"
         title="New arrivals"
@@ -175,9 +180,11 @@ export default function App() {
         onAddToCart={handleAddToCart}
         onOpenQuickView={setActiveQuickViewId}
       />
+      )}
 
       <Philosophy />
 
+      {hasItems(products.skincare) && (
       <ProductSection
         id="skincare"
         title="For the face"
@@ -188,7 +195,9 @@ export default function App() {
         onAddToCart={handleAddToCart}
         onOpenQuickView={setActiveQuickViewId}
       />
+      )}
 
+      {hasItems(products.haircare) && (
       <ProductSection
         id="haircare"
         title="For the hair"
@@ -200,7 +209,9 @@ export default function App() {
         onAddToCart={handleAddToCart}
         onOpenQuickView={setActiveQuickViewId}
       />
+      )}
 
+      {hasItems(products.supplements) && (
       <ProductSection
         id="supplements"
         title="Supplements"
@@ -210,7 +221,9 @@ export default function App() {
         onAddToCart={handleAddToCart}
         onOpenQuickView={setActiveQuickViewId}
       />
+      )}
 
+      {hasItems(products.lipbalm) && (
       <ProductSection
         id="lipbalm"
         title="Lip balm"
@@ -221,6 +234,7 @@ export default function App() {
         onAddToCart={handleAddToCart}
         onOpenQuickView={setActiveQuickViewId}
       />
+      )}
       </>)}
 
       <Promo />
