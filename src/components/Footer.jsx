@@ -40,6 +40,12 @@ export default function Footer() {
           <span>© 2026 Aurelia. All rights reserved.</span>
           <span>Made for skin, not for shelves.</span>
         </div>
+        <div style={{ fontSize: '11px', color: 'rgba(251,244,236,.45)', marginTop: '10px' }}>
+          Some product photos from{' '}
+          <a href="https://world.openbeautyfacts.org" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>Open Beauty Facts</a>
+          {' '}contributors, licensed{' '}
+          <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>CC BY-SA 3.0</a>.
+        </div>
       </div>
     </footer>
   );

@@ -48,7 +48,7 @@ export default function QuickViewModal({ product, onClose, onAddToCart }) {
               <img 
                 src={product.image} 
                 alt={product.name} 
-                style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'relative', zIndex: 1 }} 
+                style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fff', position: 'relative', zIndex: 1 }} 
               />
             ) : (
               <span className="bloom" style={{ color: fg }}>

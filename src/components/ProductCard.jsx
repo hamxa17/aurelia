@@ -40,7 +40,7 @@ export default function ProductCard({ id, product, onAddToCart, onOpenQuickView 
           <img 
             src={product.image} 
             alt={product.name} 
-            style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'relative', zIndex: 2, borderRadius: 'inherit' }} 
+            style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fff', position: 'relative', zIndex: 2, borderRadius: 'inherit' }} 
           />
         ) : (
           <span className="bloom" style={{ color: fg }}>

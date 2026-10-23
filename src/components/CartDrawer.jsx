@@ -28,7 +28,7 @@ export default function CartDrawer({ cart, onClose, onUpdateQty, onRemoveItem })
                       <img 
                         src={product.image} 
                         alt={product.name} 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fff' }} 
                       />
                     ) : (
                       <span className="bloom" style={{ color: fg }}>
