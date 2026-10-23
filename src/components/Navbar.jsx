@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import BloomShape from './BloomShape';
 
-export default function Navbar({ cartCount, isPulsing, onOpenCart, onToggleMenu }) {
+export default function Navbar({ links = [], cartCount, isPulsing, onOpenCart, onToggleMenu }) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -32,18 +32,18 @@ export default function Navbar({ cartCount, isPulsing, onOpenCart, onToggleMenu 
           aurelia
         </a>
         <div className="nav__links">
-          <a className="nav__link" href="#new-arrivals">New</a>
-          <a className="nav__link" href="#skincare">Skincare</a>
-          <a className="nav__link" href="#haircare">Hair</a>
-          <a className="nav__link" href="#supplements">Supplements</a>
-          <a className="nav__link" href="#philosophy">Learn</a>
+          {links.map((l) => (
+            <a key={l.href} className="nav__link" href={l.href}>{l.label}</a>
+          ))}
         </div>
-        <button className="nav__cart" onClick={onOpenCart} aria-label="Open bag">
+        <div className="nav__actions">
+          <button className="nav__cart" onClick={onOpenCart} aria-label="Open bag">
           bag <span className={`nav__cart-count ${isPulsing ? 'pulse' : ''}`}>{cartCount}</span>
         </button>
         <button className="nav__burger" onClick={onToggleMenu} aria-label="Open menu">
           <span></span><span></span><span></span>
         </button>
+        </div>
       </div>
     </nav>
   );
