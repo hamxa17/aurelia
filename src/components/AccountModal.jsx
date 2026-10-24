@@ -74,27 +74,25 @@ export default function AccountModal({ isOpen, user, onClose }) {
         {!user ? (
           <div className="admin-auth-view" style={{ padding: '48px 28px' }}>
             <BloomShape width="34" height="34" style={{ color: 'var(--gold)' }} />
-            <h2 className="admin-title" style={{ marginTop: '12px' }}>Sign in</h2>
+            <h2 className="admin-title" style={{ marginTop: '12px', marginBottom: '20px' }}>Sign in</h2>
 
             {step === 'email' ? (
               <>
-                <p className="admin-sub">
-                  We'll email you a 6-digit code — no password needed. Your bag is saved to your account, so it's
-                  still there next time.
-                </p>
                 <form className="admin-form" onSubmit={handleSendCode}>
                   <input type="email" className="admin-input" placeholder="you@email.com" autoComplete="email"
                     required autoFocus value={email} onChange={(e) => setEmail(e.target.value)} />
                   {error && <div className="admin-error" role="alert">{error}</div>}
                   <button type="submit" className="admin-btn" disabled={isBusy}>
-                    {isBusy ? 'Sending…' : 'Email me a code'}
+                    {isBusy ? 'Sending…' : 'Email me a sign-in link'}
                   </button>
                 </form>
               </>
             ) : (
               <>
                 <p className="admin-sub">
-                  Enter the code we sent to <strong>{email}</strong>. Check spam if you don't see it.
+                  We sent an email to <strong>{email}</strong>. Tap the <strong>sign-in link</strong> in it and
+                  you'll come back here signed in. If the email shows a 6-digit code instead, type it below.
+                  Check spam if you don't see it.
                 </p>
                 <form className="admin-form" onSubmit={handleVerify}>
                   <input className="admin-input account-code" inputMode="numeric" autoComplete="one-time-code"
@@ -102,7 +100,7 @@ export default function AccountModal({ isOpen, user, onClose }) {
                     value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} />
                   {error && <div className="admin-error" role="alert">{error}</div>}
                   <button type="submit" className="admin-btn" disabled={isBusy}>
-                    {isBusy ? 'Checking…' : 'Sign in'}
+                    {isBusy ? 'Checking…' : 'Sign in with code'}
                   </button>
                   <button type="button" className="admin-btn-secondary" onClick={() => { setStep('email'); setError(''); }}>
                     Use a different email

@@ -16,7 +16,6 @@ import Marquee from './components/Marquee';
 import TrustBar from './components/TrustBar';
 import ProductSection from './components/ProductSection';
 import Philosophy from './components/Philosophy';
-import Promo from './components/Promo';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import QuickViewModal from './components/QuickViewModal';
@@ -323,8 +322,6 @@ export default function App() {
       )}
 
       <Philosophy />
-
-      <Promo settings={settings} />
 
       <Footer settings={settings} />
 

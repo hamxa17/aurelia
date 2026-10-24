@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatTaka, whatsappLink } from '../data/catalog';
+import { whatsappLink } from '../data/catalog';
 
 export default function Footer({ settings }) {
   const s = settings || {};
@@ -23,12 +23,6 @@ export default function Footer({ settings }) {
               <a href="#haircare">Hair care</a>
               <a href="#supplements">Supplements</a>
               <a href="#philosophy">About us</a>
-            </div>
-            <div className="footer__col">
-              <span className="label">delivery</span>
-              <span className="footer__text">Inside Dhaka — {formatTaka(s.delivery_inside_dhaka)}</span>
-              <span className="footer__text">Outside Dhaka — {formatTaka(s.delivery_outside_dhaka)}</span>
-              <span className="footer__text">Cash on delivery</span>
             </div>
             {hasContact && (
               <div className="footer__col">
