@@ -2,12 +2,12 @@ import React from 'react';
 import BloomShape from './BloomShape';
 
 const marqueeItems = [
-  'clean formulas',
-  'cruelty-free',
-  'made for every skin',
-  'no rinse-and-regret',
-  'small batch',
-  'dermatologist reviewed'
+  '100% authentic',
+  'cash on delivery',
+  'delivery across Bangladesh',
+  'trusted brands',
+  'skincare · hair care · supplements',
+  'carefully picked'
 ];
 
 export default function Marquee() {

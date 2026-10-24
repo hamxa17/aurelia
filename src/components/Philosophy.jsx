@@ -28,8 +28,8 @@ export default function Philosophy() {
     <section className="philosophy" id="philosophy" ref={sectionRef}>
       <div className="wrap">
         <div className="bubble" data-reveal>
-          <p>A good routine isn't the one with the most steps — it's the one you actually finish. Every Aurelia formula is built to earn its place on your shelf, with ingredients you can pronounce and results you can see by the second week, not the second bottle.</p>
-          <div className="label">— the aurelia standard</div>
+          <p>Aurelia is a small shop with a simple promise: only genuine products, at fair prices, delivered to your door. Every item is picked by hand from trusted suppliers — no fakes, no guesswork. Order, pay when it arrives, and message us any time if you need help choosing.</p>
+          <div className="label">— why shop with aurelia</div>
         </div>
       </div>
     </section>

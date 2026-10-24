@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ACCENTS } from '../data/products';
+import { formatTaka } from '../data/catalog';
 import BloomShape from './BloomShape';
 
 export default function ProductCard({ id, product, onAddToCart, onOpenQuickView }) {
@@ -33,8 +34,7 @@ export default function ProductCard({ id, product, onAddToCart, onOpenQuickView 
 
   return (
     <div className="card" data-id={id} onClick={handleCardClick}>
-      <div className="card__swatch" style={{ background: bg }}>
-        <span className="card__sample">sample</span>
+      <div className="card__swatch" style={{ background: product.image ? '#fff' : bg }}>
         {product.badge && <span className="card__badge">{product.badge}</span>}
         {product.image ? (
           <img 
@@ -49,11 +49,12 @@ export default function ProductCard({ id, product, onAddToCart, onOpenQuickView 
         )}
       </div>
       <div>
+        {product.brand && <div className="card__brand">{product.brand}</div>}
         <div className="card__name">{product.name}</div>
         <div className="card__note">{product.note}</div>
       </div>
       <div className="card__meta">
-        <div className="card__price">৳{product.price.toFixed(2)}</div>
+        <div className="card__price">{formatTaka(product.price)}</div>
       </div>
       <div className="card__actions" onClick={(e) => e.stopPropagation()}>
         <div className="stepper">

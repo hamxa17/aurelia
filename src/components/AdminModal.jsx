@@ -12,7 +12,10 @@ import {
   signInAdmin,
   signOutAdmin,
   changeAdminPassword,
+  saveSettings,
+  formatTaka,
 } from '../data/catalog';
+import AdminOrders from './AdminOrders';
 import { isSupabaseConfigured } from '../lib/supabase';
 import BloomShape from './BloomShape';
 
@@ -22,7 +25,9 @@ export default function AdminModal({
   onAuthenticate, 
   onClose, 
   products,
-  onCatalogChanged
+  onCatalogChanged,
+  settings,
+  onSettingsChanged,
 }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,11 +35,13 @@ export default function AdminModal({
   const [isBusy, setIsBusy] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [formError, setFormError] = useState('');
-  const [activeTab, setActiveTab] = useState('manage'); // 'manage' | 'add' | 'settings'
+  const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'manage' | 'add' | 'settings'
+  const [pendingCount, setPendingCount] = useState(0);
 
   // Form State for Add / Edit
   const [editingId, setEditingId] = useState(null);
   const [formName, setFormName] = useState('');
+  const [formBrand, setFormBrand] = useState('');
   const [formCategory, setFormCategory] = useState('newArrivals');
   const [formPrice, setFormPrice] = useState('');
   const [formNote, setFormNote] = useState('');
@@ -43,6 +50,10 @@ export default function AdminModal({
   const [formImage, setFormImage] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
+
+  // Store settings form
+  const [storeForm, setStoreForm] = useState(null);
+  const [storeMsg, setStoreMsg] = useState('');
 
   // Settings State
   const [newPass, setNewPass] = useState('');
@@ -57,8 +68,14 @@ export default function AdminModal({
       setFormSuccess('');
       setFormError('');
       setEditingId(null);
+      setStoreForm(null);
+      setStoreMsg('');
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && settings && !storeForm) setStoreForm({ ...settings });
+  }, [isOpen, settings, storeForm]);
 
   if (!isOpen) return null;
 
@@ -87,6 +104,7 @@ export default function AdminModal({
   const handleStartEdit = (prod) => {
     setEditingId(prod.id);
     setFormName(prod.name || '');
+    setFormBrand(prod.brand || '');
     setFormCategory(categoryKeyOf(prod));
     setFormPrice(prod.price ?? '');
     setFormNote(prod.note || '');
@@ -102,6 +120,7 @@ export default function AdminModal({
   const resetForm = () => {
     setEditingId(null);
     setFormName('');
+    setFormBrand('');
     setFormCategory('newArrivals');
     setFormPrice('');
     setFormNote('');
@@ -138,6 +157,7 @@ export default function AdminModal({
 
     const productData = {
       name: formName,
+      brand: formBrand,
       price: parseFloat(formPrice),
       note: formNote.trim() || 'Formulated for your daily ritual',
       accent: formAccent,
@@ -180,6 +200,19 @@ export default function AdminModal({
       setFormError(friendlyError(err));
     }
   };
+
+  const handleSaveStore = async (e) => {
+    e.preventDefault();
+    setStoreMsg('');
+    try {
+      await saveSettings(storeForm);
+      await onSettingsChanged?.();
+      setStoreMsg('Saved — the shop now shows these details.');
+    } catch (err) {
+      setStoreMsg(err.message || 'Could not save.');
+    }
+  };
+  const setStore = (key) => (e) => setStoreForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
@@ -260,6 +293,12 @@ export default function AdminModal({
                 <span>Store Management</span>
               </div>
               <div className="admin-tabs">
+                <button
+                  className={`admin-tab ${activeTab === 'orders' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('orders')}
+                >
+                  Orders{pendingCount > 0 && <span className="admin-tab__badge">{pendingCount}</span>}
+                </button>
                 <button 
                   className={`admin-tab ${activeTab === 'manage' ? 'active' : ''}`}
                   onClick={() => { setActiveTab('manage'); resetForm(); }}
@@ -287,6 +326,8 @@ export default function AdminModal({
             <div className="admin-content">
               {formSuccess && <div className="admin-success-banner">{formSuccess}</div>}
               {formError && <div className="admin-error" role="alert" style={{ marginBottom: '12px' }}>{formError}</div>}
+
+              {activeTab === 'orders' && <AdminOrders onPendingCount={setPendingCount} />}
 
               {activeTab === 'manage' && (
                 <div className="admin-manage-list">
@@ -323,13 +364,13 @@ export default function AdminModal({
                                   <span className="admin-swatch-dot" style={{ background: ACCENTS[item.accent]?.[0] || '#F1D6D9' }} />
                                 )}
                                 <div>
-                                  <div className="admin-item-name">{item.name}</div>
+                                  <div className="admin-item-name">{item.brand ? `${item.brand} · ` : ''}{item.name}</div>
                                   <div className="admin-item-note">{item.note}</div>
                                 </div>
                               </div>
                             </td>
                             <td><span className="admin-cat-badge">{categoryLabelOf(item)}</span></td>
-                            <td><strong>৳{Number(item.price).toFixed(2)}</strong></td>
+                            <td><strong>{formatTaka(item.price)}</strong></td>
                             <td>{item.badge ? <span className="card__badge">{item.badge}</span> : '—'}</td>
                             <td style={{ textAlign: 'right' }}>
                               <button 
@@ -359,11 +400,21 @@ export default function AdminModal({
 
                   <div className="admin-grid-2">
                     <div>
+                      <label className="label">Brand</label>
+                      <input
+                        type="text"
+                        maxLength={40}
+                        placeholder="e.g. Garnier (leave empty if none)"
+                        value={formBrand}
+                        onChange={(e) => setFormBrand(e.target.value)}
+                        className="admin-input"
+                        style={{ marginBottom: '10px' }}
+                      />
                       <label className="label">Product Name *</label>
                       <input 
                         type="text" 
                         required 
-                        placeholder="e.g. Rose Hydrating Veil" 
+                        placeholder="e.g. Bright Complete Facewash" 
                         value={formName}
                         onChange={(e) => setFormName(e.target.value)}
                         className="admin-input"
@@ -516,7 +567,50 @@ export default function AdminModal({
 
               {activeTab === 'settings' && (
                 <div className="admin-settings-view">
-                  <h3>Admin Portal Settings</h3>
+                  <h3>Settings</h3>
+
+                  {storeForm && (
+                    <form className="admin-card-box" style={{ marginTop: '18px' }} onSubmit={handleSaveStore}>
+                      <h4>Shop details</h4>
+                      <p className="admin-item-note" style={{ margin: '4px 0 12px' }}>
+                        Shown to customers in the footer, checkout and WhatsApp buttons.
+                      </p>
+                      <div className="admin-grid-2">
+                        <div>
+                          <label className="label">Delivery inside Dhaka (৳)</label>
+                          <input type="number" min="0" step="1" className="admin-input" required
+                            value={storeForm.delivery_inside_dhaka} onChange={setStore('delivery_inside_dhaka')} />
+                        </div>
+                        <div>
+                          <label className="label">Delivery outside Dhaka (৳)</label>
+                          <input type="number" min="0" step="1" className="admin-input" required
+                            value={storeForm.delivery_outside_dhaka} onChange={setStore('delivery_outside_dhaka')} />
+                        </div>
+                        <div>
+                          <label className="label">WhatsApp number</label>
+                          <input className="admin-input" placeholder="01XXXXXXXXX" maxLength={20}
+                            value={storeForm.whatsapp || ''} onChange={setStore('whatsapp')} />
+                        </div>
+                        <div>
+                          <label className="label">Phone (shown in footer)</label>
+                          <input className="admin-input" placeholder="01XXXXXXXXX" maxLength={20}
+                            value={storeForm.phone || ''} onChange={setStore('phone')} />
+                        </div>
+                        <div>
+                          <label className="label">Contact email</label>
+                          <input type="email" className="admin-input" maxLength={120}
+                            value={storeForm.email || ''} onChange={setStore('email')} />
+                        </div>
+                        <div>
+                          <label className="label">Facebook page link</label>
+                          <input type="url" className="admin-input" placeholder="https://facebook.com/…" maxLength={300}
+                            value={storeForm.facebook_url || ''} onChange={setStore('facebook_url')} />
+                        </div>
+                      </div>
+                      {storeMsg && <div className="admin-success" style={{ marginTop: '10px' }}>{storeMsg}</div>}
+                      <button type="submit" className="admin-btn" style={{ marginTop: '12px' }}>Save shop details</button>
+                    </form>
+                  )}
                   
                   <div className="admin-card-box" style={{ marginTop: '18px' }}>
                     <h4>Change your password</h4>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import BloomShape from './BloomShape';
 
-export default function Navbar({ links = [], cartCount, isPulsing, onOpenCart, onToggleMenu }) {
+export default function Navbar({ links = [], cartCount, isPulsing, onOpenCart, onToggleMenu, onOpenAccount, isSignedIn }) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -37,6 +37,13 @@ export default function Navbar({ links = [], cartCount, isPulsing, onOpenCart, o
           ))}
         </div>
         <div className="nav__actions">
+          <button className="nav__account" onClick={onOpenAccount} aria-label={isSignedIn ? 'Your account' : 'Sign in'}>
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" strokeLinecap="round" />
+            </svg>
+            {isSignedIn && <span className="nav__account-dot" />}
+          </button>
           <button className="nav__cart" onClick={onOpenCart} aria-label="Open bag">
           bag <span className={`nav__cart-count ${isPulsing ? 'pulse' : ''}`}>{cartCount}</span>
         </button>

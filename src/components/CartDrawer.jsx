@@ -1,8 +1,9 @@
 import React from 'react';
 import { ACCENTS } from '../data/products';
+import { formatTaka } from '../data/catalog';
 import BloomShape from './BloomShape';
 
-export default function CartDrawer({ cart, onClose, onUpdateQty, onRemoveItem }) {
+export default function CartDrawer({ cart, onClose, onUpdateQty, onRemoveItem, onCheckout, deliveryFrom }) {
   const entries = Object.entries(cart);
   const subtotal = entries.reduce((sum, [, item]) => sum + item.product.price * item.qty, 0);
 
@@ -37,8 +38,8 @@ export default function CartDrawer({ cart, onClose, onUpdateQty, onRemoveItem })
                     )}
                   </div>
                   <div className="cart-item__info">
-                    <div className="cart-item__name">{product.name}</div>
-                    <div className="cart-item__price-each">৳{product.price.toFixed(2)} each</div>
+                    <div className="cart-item__name">{product.brand ? `${product.brand} ` : ''}{product.name}</div>
+                    <div className="cart-item__price-each">{formatTaka(product.price)} each</div>
                     <div className="cart-item__meta">
                       <div className="stepper stepper--cart">
                         <button 
@@ -71,9 +72,14 @@ export default function CartDrawer({ cart, onClose, onUpdateQty, onRemoveItem })
         <div className="cart-drawer__foot">
           <div className="cart-drawer__subtotal">
             <span>subtotal</span>
-            <span>৳{subtotal.toFixed(2)}</span>
+            <span>{formatTaka(subtotal)}</span>
           </div>
-          <button className="cart-checkout">checkout — connect payments later</button>
+          <p className="cart-drawer__hint">
+            + delivery from {formatTaka(deliveryFrom)} · cash on delivery
+          </p>
+          <button className="cart-checkout" onClick={onCheckout} disabled={entries.length === 0}>
+            checkout
+          </button>
         </div>
       </div>
     </>

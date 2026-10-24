@@ -48,7 +48,7 @@ export default function Hero() {
         <div className="hero__nav-space"></div>
         <div className="hero__content">
           <div className="hero__eyebrow label">
-            <BloomShape width="14" height="14" /> gardens for your skin
+            <BloomShape width="14" height="14" /> beauty, delivered
           </div>
           <h1 className="hero__wordmark" aria-label="Aurelia">
             <span style={{ animationDelay: '.05s' }}>A</span>
@@ -59,7 +59,7 @@ export default function Hero() {
             <span style={{ animationDelay: '.3s' }}>i</span>
             <span style={{ animationDelay: '.35s' }}>a</span>
           </h1>
-          <p className="hero__tag">Quiet formulas for skin, hair and the everyday ritual in between — made to be felt, not performed.</p>
+          <p className="hero__tag">Skincare, hair care and supplements from the brands you already love — 100% authentic, delivered to your door.</p>
         </div>
       </div>
     </header>
