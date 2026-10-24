@@ -2,43 +2,48 @@
 // Triggered by a Database Webhook on INSERT into public.orders.
 //
 // Secrets to set (Supabase → Edge Functions → Secrets):
-//   RESEND_API_KEY   – from resend.com → API Keys
-//   ALERT_EMAIL      – where alerts go (must be your Resend account email until you verify a domain)
-//   WEBHOOK_SECRET   – any long random text; also put it in the webhook's "x-webhook-secret" header
+//   RESEND_API_KEY – from resend.com → API Keys
+//   ALERT_EMAIL    – where alerts go (the email your Resend account was created with)
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are provided automatically.
+//
+// Safety: the function only emails about orders it can find in the database that were
+// created in the last 10 minutes, so a forged request can't make it send arbitrary emails.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const taka = (n: number) => '৳' + Number(n).toLocaleString('en-IN');
-const esc = (s: string) =>
+const esc = (s: unknown) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
 Deno.serve(async (req) => {
-  if (req.headers.get('x-webhook-secret') !== Deno.env.get('WEBHOOK_SECRET')) {
-    return new Response('forbidden', { status: 403 });
+  let payload;
+  try {
+    payload = await req.json();
+  } catch {
+    return new Response('bad request', { status: 400 });
   }
+  const orderId = payload?.record?.id;
+  if (payload?.type !== 'INSERT' || payload?.table !== 'orders' || !orderId) return new Response('ignored');
 
-  const payload = await req.json();
-  const order = payload?.record;
-  if (payload?.type !== 'INSERT' || !order?.id) return new Response('ignored');
-
-  // The order row is inserted before its items, so wait briefly and read the finished order.
+  // The order row is saved a moment before its items, so wait briefly, then read the finished order.
   await new Promise((r) => setTimeout(r, 1500));
   const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-  const { data: full } = await db
+  const { data: o } = await db
     .from('orders')
-    .select('order_number, customer_name, phone, address, area, note, subtotal, delivery_fee, total, order_items(name, brand, price, qty)')
-    .eq('id', order.id)
-    .single();
-  const o = full ?? order;
-  const items = (full?.order_items ?? []) as { name: string; brand: string | null; price: number; qty: number }[];
+    .select('order_number, customer_name, phone, address, area, note, subtotal, delivery_fee, total, created_at, order_items(name, brand, price, qty)')
+    .eq('id', orderId)
+    .maybeSingle();
 
-  const rows = items
+  if (!o || Date.now() - new Date(o.created_at).getTime() > 10 * 60 * 1000) {
+    return new Response('ignored');
+  }
+
+  const rows = (o.order_items as { name: string; brand: string | null; price: number; qty: number }[])
     .map((i) => `<tr><td>${esc([i.brand, i.name].filter(Boolean).join(' '))} × ${i.qty}</td><td align="right">${taka(i.price * i.qty)}</td></tr>`)
     .join('');
 
   const html = `
-    <h2>New order #${o.order_number} — ${taka(o.total)}</h2>
+    <h2 style="margin:0 0 8px">New order #${o.order_number} — ${taka(o.total)}</h2>
     <p><b>${esc(o.customer_name)}</b><br>
        <a href="tel:${esc(o.phone)}">${esc(o.phone)}</a><br>
        ${esc(o.address)}<br>
@@ -48,7 +53,7 @@ Deno.serve(async (req) => {
       <tr><td>Delivery</td><td align="right">${taka(o.delivery_fee)}</td></tr>
       <tr><td><b>Collect in cash</b></td><td align="right"><b>${taka(o.total)}</b></td></tr>
     </table>
-    <p>Open the admin panel to confirm it: /admin</p>`;
+    <p><a href="https://aurelia-store-xi.vercel.app/admin">Open the admin panel</a> to confirm it.</p>`;
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -61,5 +66,7 @@ Deno.serve(async (req) => {
     }),
   });
 
-  return new Response(res.ok ? 'sent' : `email failed: ${await res.text()}`, { status: res.ok ? 200 : 500 });
+  const body = await res.text();
+  if (!res.ok) console.error('Resend error', res.status, body);
+  return new Response(res.ok ? 'sent' : `email failed: ${body}`, { status: res.ok ? 200 : 502 });
 });
