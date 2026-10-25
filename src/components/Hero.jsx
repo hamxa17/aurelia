@@ -20,30 +20,11 @@ export default function Hero() {
 
   return (
     <header className="hero">
-      <div 
-        className="hero__orb" 
-        id="orb1" 
-        style={{ 
-          width: '340px', 
-          height: '340px', 
-          top: '8%', 
-          left: '-6%', 
-          background: 'radial-gradient(circle at 35% 30%, rgba(230,180,190,.6), transparent 70%)',
-          transform: orb1Transform
-        }} 
-      />
-      <div 
-        className="hero__orb" 
-        id="orb2" 
-        style={{ 
-          width: '260px', 
-          height: '260px', 
-          top: '18%', 
-          right: '-4%', 
-          background: 'radial-gradient(circle at 60% 40%, rgba(230,196,120,.5), transparent 70%)',
-          transform: orb2Transform
-        }} 
-      />
+      {/* Painted lilies: pink hanging from the top-right, cream rising from the bottom-left */}
+      <div className="hero__garden" aria-hidden="true">
+        <img className="hero__flower hero__flower--hang" src="/flowers/lilies-pink.webp" alt="" style={{ transform: orb1Transform }} />
+        <img className="hero__flower hero__flower--rise" src="/flowers/lilies-cream.webp" alt="" style={{ transform: orb2Transform }} />
+      </div>
       <div className="wrap">
         <div className="hero__nav-space"></div>
         <div className="hero__content">

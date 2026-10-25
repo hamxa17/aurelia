@@ -928,3 +928,16 @@ body.qv-open .qv-modal {
 
 /* ============ FOOTER: plain text rows ============ */
 .footer__text { display: block; padding: 6px 0; color: rgba(251,244,236,.8); font-size: 14.5px; }
+
+/* ============ HERO FLOWERS ============ */
+.hero{background: radial-gradient(70% 60% at 50% 100%, rgba(110,38,52,0.55), transparent 60%), linear-gradient(180deg,#2c1219 0%, #4c1b27 45%, #6e2634 100%);}
+.hero__garden{position:absolute; inset:0; z-index:1; overflow:hidden; pointer-events:none;}
+.hero .wrap{position:relative; z-index:2;}
+.hero__content{text-shadow:0 2px 24px rgba(30,8,14,.45);}
+.hero__flower{position:absolute; height:auto; filter:drop-shadow(0 26px 36px rgba(20,5,10,.4)); will-change:transform;}
+.hero__flower--hang{width:min(600px,40vw); right:-120px; top:-150px; rotate:180deg;}
+.hero__flower--rise{width:min(560px,38vw); left:-150px; bottom:-170px; opacity:.92;}
+@media(max-width:720px){
+  .hero__flower--hang{width:300px; right:-95px; top:-70px;}
+  .hero__flower--rise{width:300px; left:-105px; bottom:-95px; opacity:.85;}
+}
