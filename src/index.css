@@ -941,3 +941,12 @@ body.qv-open .qv-modal {
   .hero__flower--hang{width:300px; right:-95px; top:-70px;}
   .hero__flower--rise{width:300px; left:-105px; bottom:-95px; opacity:.85;}
 }
+
+/* ============ MOBILE MENU BRANCH ============ */
+.mobile-menu{overflow:hidden;}
+.mobile-menu a, .mobile-menu__foot{position:relative; z-index:2;}
+.mobile-menu__flower{position:absolute; height:auto; pointer-events:none; z-index:1;
+  filter:drop-shadow(0 18px 26px rgba(20,5,10,.45)); opacity:0;
+  transition:opacity .8s var(--ease) .25s, translate 1s var(--ease) .2s;}
+.mobile-menu__flower--branch{width:420px; right:-80px; bottom:-95px; translate:40px 40px;}
+body.menu-open .mobile-menu__flower{opacity:.95; translate:0 0;}
