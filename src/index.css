@@ -1019,3 +1019,8 @@ body.menu-open .mobile-menu__flower{opacity:.95; translate:0 0;}
 .card__actions .btn-add{min-width:0; padding:0 10px;}
 @media(max-width:520px){ .card__actions .stepper button{width:26px;} .card__actions{gap:6px;} }
 
+
+/* section description sits under the headline; sort on the right */
+.section__desc{max-width:440px; margin-top:12px; color:var(--ink-soft);}
+.section__aside{align-self:flex-end;}
+@media(max-width:720px){ .section__aside{align-self:stretch;} }

@@ -63,9 +63,9 @@ export default function ProductSection({
               <BloomShape width="12" height="12" /> {tagline}
             </div>
             <h2>{title}</h2>
+            <p className="section__desc">{description}</p>
           </div>
           <div className="section__aside">
-            <p>{description}</p>
             <label className="sort">
               <span className="label">sort</span>
               <select value={sort} onChange={(e) => setSort(e.target.value)}>
