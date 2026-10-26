@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
       <tr><td>Delivery</td><td align="right">${taka(o.delivery_fee)}</td></tr>
       <tr><td><b>Collect in cash</b></td><td align="right"><b>${taka(o.total)}</b></td></tr>
     </table>
-    <p><a href="https://aurelia-store-xi.vercel.app/admin">Open the admin panel</a> to confirm it.</p>`;
+    <p><a href="https://aurelia-bd.vercel.app/admin">Open the admin panel</a> to confirm it.</p>`;
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
