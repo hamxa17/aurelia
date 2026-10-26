@@ -31,6 +31,7 @@ const fromRow = (r) => ({
   id: r.id,
   name: r.name,
   brand: r.brand || '',
+  stock: r.stock ?? null,
   price: Number(r.price),
   note: r.note || '',
   accent: r.accent || 'rose',
@@ -44,6 +45,7 @@ const fromRow = (r) => ({
 const toRow = (p) => ({
   name: p.name.trim(),
   brand: p.brand?.trim() || null,
+  stock: p.stock === '' || p.stock == null ? null : Math.max(0, parseInt(p.stock, 10) || 0),
   price: Number(p.price),
   note: p.note?.trim() || null,
   accent: p.accent || 'rose',
@@ -59,7 +61,7 @@ function previewProducts() {
   const out = [];
   const push = (section, subcategory, list) =>
     list.forEach((p, i) =>
-      out.push({ ...p, id: `preview-${section}-${subcategory || ''}-${i}`, section, subcategory, image: '', description: '', badge: p.badge || '', brand: '' })
+      out.push({ ...p, id: `preview-${section}-${subcategory || ''}-${i}`, section, subcategory, image: '', description: '', badge: p.badge || '', brand: '', stock: null })
     );
   push('newArrivals', null, INITIAL_PRODUCTS.newArrivals);
   Object.entries(INITIAL_PRODUCTS.skincare).forEach(([s, l]) => push('skincare', s, l));
@@ -333,3 +335,7 @@ export async function deleteReview(id) {
   const { error } = await supabase.from('reviews').delete().eq('id', id);
   if (error) throw error;
 }
+
+// URL-friendly name: "CeraVe Moisturising Cream" -> "cerave-moisturising-cream"
+export const productSlug = (p) =>
+  [p.brand, p.name].filter(Boolean).join(' ').toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');

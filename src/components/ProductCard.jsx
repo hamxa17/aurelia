@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ACCENTS } from '../data/products';
 import { formatTaka } from '../data/catalog';
 import BloomShape from './BloomShape';
+import StockBadge from './StockBadge';
 
 export default function ProductCard({ id, product, onAddToCart, onOpenQuickView }) {
   const [qty, setQty] = useState(1);
@@ -33,7 +34,7 @@ export default function ProductCard({ id, product, onAddToCart, onOpenQuickView 
   };
 
   return (
-    <div className="card" data-id={id} onClick={handleCardClick}>
+    <div className={`card ${product.stock === 0 ? 'card--soldout' : ''}`} data-id={id} onClick={handleCardClick}>
       <div className="card__swatch" style={{ background: product.image ? '#fff' : bg }}>
         {product.badge && <span className="card__badge">{product.badge}</span>}
         {product.image ? (
@@ -55,6 +56,7 @@ export default function ProductCard({ id, product, onAddToCart, onOpenQuickView 
       </div>
       <div className="card__meta">
         <div className="card__price">{formatTaka(product.price)}</div>
+        <StockBadge stock={product.stock} />
       </div>
       <div className="card__actions" onClick={(e) => e.stopPropagation()}>
         <div className="stepper">
@@ -62,8 +64,8 @@ export default function ProductCard({ id, product, onAddToCart, onOpenQuickView 
           <span className="stepper__val">{qty}</span>
           <button className="step-plus" onClick={handlePlus} aria-label="increase">+</button>
         </div>
-        <button className={`btn-add ${isAdded ? 'added' : ''}`} onClick={handleAdd}>
-          {isAdded ? 'added ' : 'add '}
+        <button className={`btn-add ${isAdded ? 'added' : ''}`} onClick={handleAdd} disabled={product.stock === 0}>
+          {product.stock === 0 ? 'sold out ' : isAdded ? 'added ' : 'add '}
           <BloomShape width="11" height="11" style={{ opacity: 0.8 }} />
         </button>
       </div>

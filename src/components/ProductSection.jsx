@@ -15,6 +15,14 @@ export default function ProductSection({
   onOpenQuickView
 }) {
   const [selectedTab, setSelectedTab] = useState(null);
+  const [sort, setSort] = useState('featured');
+  const sortList = (list) => {
+    const l = [...list];
+    if (sort === 'low') l.sort((a, b) => a.price - b.price);
+    if (sort === 'high') l.sort((a, b) => b.price - a.price);
+    if (sort === 'stock') l.sort((a, b) => (a.stock === 0) - (b.stock === 0));
+    return l;
+  };
   const categories = isTabbed && products ? Object.keys(products) : [];
   // Fall back to the first tab if the chosen one disappears (e.g. its last product was deleted)
   const activeTab = categories.includes(selectedTab) ? selectedTab : categories[0] || null;
@@ -56,7 +64,18 @@ export default function ProductSection({
             </div>
             <h2>{title}</h2>
           </div>
-          <p>{description}</p>
+          <div className="section__aside">
+            <p>{description}</p>
+            <label className="sort">
+              <span className="label">sort</span>
+              <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                <option value="featured">Featured</option>
+                <option value="low">Price: low to high</option>
+                <option value="high">Price: high to low</option>
+                <option value="stock">In stock first</option>
+              </select>
+            </label>
+          </div>
         </div>
 
         {isTabbed ? (
@@ -79,7 +98,7 @@ export default function ProductSection({
                 className={`tab-panel ${activeTab === cat ? 'active' : ''}`}
               >
                 <div className="grid" data-reveal-stagger>
-                  {products[cat].map((prod) => (
+                  {sortList(products[cat]).map((prod) => (
                     <ProductCard
                       key={prod.id}
                       id={prod.id}
@@ -94,7 +113,7 @@ export default function ProductSection({
           </>
         ) : isHorizontalScroll ? (
           <div className="hscroll" id={`${id}Row`}>
-            {products.map((prod) => (
+            {sortList(products).map((prod) => (
               <ProductCard
                 key={prod.id}
                 id={prod.id}
@@ -106,7 +125,7 @@ export default function ProductSection({
           </div>
         ) : (
           <div className="grid" data-reveal-stagger>
-            {products.map((prod) => (
+            {sortList(products).map((prod) => (
               <ProductCard
                 key={prod.id}
                 id={prod.id}

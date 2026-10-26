@@ -47,6 +47,7 @@ export default function AdminModal({
   const [formNote, setFormNote] = useState('');
   const [formAccent, setFormAccent] = useState('rose');
   const [formBadge, setFormBadge] = useState('');
+  const [formStock, setFormStock] = useState('');
   const [formImage, setFormImage] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
@@ -110,6 +111,7 @@ export default function AdminModal({
     setFormNote(prod.note || '');
     setFormAccent(prod.accent || 'rose');
     setFormBadge(prod.badge || '');
+    setFormStock(prod.stock ?? '');
     setFormImage(prod.image || '');
     setFormDescription(prod.description || '');
     setActiveTab('add');
@@ -126,6 +128,7 @@ export default function AdminModal({
     setFormNote('');
     setFormAccent('rose');
     setFormBadge('');
+    setFormStock('');
     setFormImage('');
     setFormDescription('');
     setFormError('');
@@ -162,6 +165,7 @@ export default function AdminModal({
       note: formNote.trim() || 'Formulated for your daily ritual',
       accent: formAccent,
       badge: formBadge,
+      stock: formStock,
       image: formImage,
       description: formDescription,
       ...parseCategoryKey(formCategory),
@@ -345,6 +349,7 @@ export default function AdminModal({
                           <th>Item</th>
                           <th>Category</th>
                           <th>Price</th>
+                          <th>Stock</th>
                           <th>Badge</th>
                           <th style={{ textAlign: 'right' }}>Actions</th>
                         </tr>
@@ -371,6 +376,7 @@ export default function AdminModal({
                             </td>
                             <td><span className="admin-cat-badge">{categoryLabelOf(item)}</span></td>
                             <td><strong>{formatTaka(item.price)}</strong></td>
+                            <td>{item.stock == null ? <span style={{ color: 'var(--ink-soft)' }}>—</span> : item.stock === 0 ? <span className="stock stock--out">Sold out</span> : item.stock <= 5 ? <span className="stock stock--low">{item.stock} left</span> : item.stock}</td>
                             <td>{item.badge ? <span className="card__badge">{item.badge}</span> : '—'}</td>
                             <td style={{ textAlign: 'right' }}>
                               <button 
@@ -494,6 +500,21 @@ export default function AdminModal({
                         onChange={(e) => setFormBadge(e.target.value)}
                         className="admin-input"
                       />
+                    </div>
+                    <div>
+                      <label className="label">Stock (Optional)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="Leave empty to not track"
+                        value={formStock}
+                        onChange={(e) => setFormStock(e.target.value)}
+                        className="admin-input"
+                      />
+                      <div style={{ fontSize: '12px', color: 'var(--ink-soft)', marginTop: '4px' }}>
+                        0 = sold out. Goes down by itself when orders come in.
+                      </div>
                     </div>
                   </div>
 

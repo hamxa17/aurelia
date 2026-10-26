@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import BloomShape from './BloomShape';
 
-export default function Navbar({ links = [], cartCount, isPulsing, onOpenCart, onToggleMenu, onOpenAccount, isSignedIn }) {
+export default function Navbar({ links = [], cartCount, isPulsing, onOpenCart, onToggleMenu, onOpenAccount, isSignedIn, onOpenSearch }) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function Navbar({ links = [], cartCount, isPulsing, onOpenCart, o
             : '0 10px 30px -14px rgba(76,27,39,0.25)'
         }}
       >
-        <a href="#top" className="nav__logo">
+        <a href="/" className="nav__logo">
           <span className="bloom" style={{ width: '20px', height: '20px' }}>
             <BloomShape width="20" height="20" />
           </span>
@@ -37,6 +37,9 @@ export default function Navbar({ links = [], cartCount, isPulsing, onOpenCart, o
           ))}
         </div>
         <div className="nav__actions">
+          <button className="nav__account" onClick={onOpenSearch} aria-label="Search">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" strokeLinecap="round" /></svg>
+          </button>
           <button className="nav__account" onClick={onOpenAccount} aria-label={isSignedIn ? 'Your account' : 'Sign in'}>
             <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
               <circle cx="12" cy="8" r="4" />

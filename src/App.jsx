@@ -6,6 +6,7 @@ import {
   fetchSettings,
   DEFAULT_SETTINGS,
   loadSavedCart,
+  productSlug,
   saveCart,
 } from './data/catalog';
 import { supabase } from './lib/supabase';
@@ -22,6 +23,8 @@ import QuickViewModal from './components/QuickViewModal';
 import CheckoutModal from './components/CheckoutModal';
 import AccountModal from './components/AccountModal';
 import AdminModal from './components/AdminModal';
+import ProductPage from './components/ProductPage';
+import SearchOverlay from './components/SearchOverlay';
 
 // Hide a section entirely when it has no products yet
 const hasItems = (group) =>
@@ -66,6 +69,43 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeQuickViewId, setActiveQuickViewId] = useState(null);
   const [isPulsing, setIsPulsing] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [path, setPath] = useState(window.location.pathname);
+
+  // Tiny router: /product/<slug> shows a product page, everything else the shop
+  useEffect(() => {
+    const onPop = () => setPath(window.location.pathname);
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+  const go = (to) => {
+    window.history.pushState({}, '', to);
+    setPath(to);
+    setIsSearchOpen(false);
+    setActiveQuickViewId(null);
+  };
+  const openProduct = (p) => go(`/product/${productSlug(p)}`);
+
+  // On a product page, "#skincare"-style links (menu, footer) jump back to the shop section
+  useEffect(() => {
+    if (!path.startsWith('/product/')) return undefined;
+    const onClick = (e) => {
+      const a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (!a) return;
+      e.preventDefault();
+      goHome(a.getAttribute('href').slice(1));
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  }, [path]); // eslint-disable-line react-hooks/exhaustive-deps
+  const goHome = (sectionId) => {
+    go('/');
+    setTimeout(() => {
+      const el = sectionId && document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      else window.scrollTo(0, 0);
+    }, 60);
+  };
 
   const [user, setUser] = useState(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
@@ -162,6 +202,13 @@ export default function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  const productFromUrl = path.startsWith('/product/')
+    ? productList.find((p) => productSlug(p) === decodeURIComponent(path.slice(9)).replace(/\/$/, '')) || null
+    : null;
+  const related = productFromUrl
+    ? productList.filter((p) => p.id !== productFromUrl.id && p.section === productFromUrl.section).slice(0, 4)
+    : [];
+
   const quickViewProduct = activeQuickViewId
     ? productList.find((p) => p.id === activeQuickViewId) || null
     : null;
@@ -229,7 +276,7 @@ export default function App() {
     setIsAccountOpen(true);
   };
 
-  const sectionProps = { onAddToCart: handleAddToCart, onOpenQuickView: setActiveQuickViewId };
+  const sectionProps = { onAddToCart: handleAddToCart, onOpenQuickView: (id) => { const p = productList.find((x) => x.id === id); if (p) openProduct(p); } };
 
   return (
     <div id="top">
@@ -241,10 +288,16 @@ export default function App() {
         onToggleMenu={() => setIsMenuOpen((prev) => !prev)}
         onOpenAccount={openAccount}
         isSignedIn={Boolean(user)}
+        onOpenSearch={() => setIsSearchOpen(true)}
       />
 
       <MobileMenu links={navLinks} onClose={() => setIsMenuOpen(false)} />
 
+      {productFromUrl ? (
+        <ProductPage product={productFromUrl} related={related} user={user} isAdmin={isAdminAuthenticated} settings={settings}
+          onAddToCart={(id, p, q) => { handleAddToCart(id, p, q); setIsCartOpen(true); }}
+          onOpenProduct={openProduct} onRequestSignIn={openAccount} onGoHome={goHome} />
+      ) : (<>
       <Hero />
 
       <Marquee />
@@ -322,8 +375,11 @@ export default function App() {
       )}
 
       <Philosophy />
+      </>)}
 
       <Footer settings={settings} />
+
+      <SearchOverlay isOpen={isSearchOpen} products={productList} onClose={() => setIsSearchOpen(false)} onOpenProduct={openProduct} />
 
       <CartDrawer
         cart={cart}
