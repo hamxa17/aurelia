@@ -86,6 +86,43 @@ export default function App() {
   };
   const openProduct = (p) => go(`/product/${productSlug(p)}`);
 
+  // A small petal flies from the button into the bag whenever something is added
+  useEffect(() => {
+    const onClick = (e) => {
+      const btn = e.target.closest && e.target.closest('.btn-add');
+      const bag = document.querySelector('.nav__cart');
+      if (!btn || btn.disabled || !bag) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      // the little flower inside the button is what flies
+      const icon = btn.querySelector('svg');
+      const a = (icon || btn).getBoundingClientRect();
+      const b = bag.getBoundingClientRect();
+      const dot = icon ? icon.cloneNode(true) : document.createElement('span');
+      dot.removeAttribute('style');
+      dot.setAttribute('class', 'fly-petal');
+      dot.setAttribute('width', '24');
+      dot.setAttribute('height', '24');
+      dot.style.left = `${a.left + a.width / 2 - 12}px`;
+      dot.style.top = `${a.top + a.height / 2 - 12}px`;
+      document.body.appendChild(dot);
+      const dx = b.left + b.width / 2 - (a.left + a.width / 2);
+      const dy = b.top + b.height / 2 - (a.top + a.height / 2);
+      dot.animate(
+        [
+          { transform: 'translate(0,0) scale(.46) rotate(0deg)', opacity: 1 },
+          { transform: `translate(${dx * 0.45}px, ${dy * 0.45 - 60}px) scale(1.15) rotate(140deg)`, opacity: 1, offset: 0.45 },
+          { transform: `translate(${dx}px, ${dy}px) scale(.35) rotate(300deg)`, opacity: 0.6 },
+        ],
+        { duration: 700, easing: 'cubic-bezier(.5,0,.3,1)' }
+      ).onfinish = () => {
+        dot.remove();
+        bag.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], { duration: 320, easing: 'ease-out' });
+      };
+    };
+    document.addEventListener('click', onClick, true);
+    return () => document.removeEventListener('click', onClick, true);
+  }, []);
+
   // On a product page, "#skincare"-style links (menu, footer) jump back to the shop section
   useEffect(() => {
     if (!path.startsWith('/product/')) return undefined;
@@ -308,6 +345,23 @@ export default function App() {
         <div className="wrap" role="alert" style={{ padding: '24px 0', textAlign: 'center', color: 'var(--rose-deep)' }}>
           {loadError}
         </div>
+      )}
+
+      {isLoading && (
+        <section className="section" aria-busy="true" aria-label="Loading products">
+          <div className="wrap">
+            <div className="skeleton skeleton--title" />
+            <div className="grid">
+              {[0, 1, 2, 3].map((i) => (
+                <div className="card card--skeleton" key={i}>
+                  <div className="skeleton skeleton--img" />
+                  <div className="skeleton skeleton--line" />
+                  <div className="skeleton skeleton--line skeleton--short" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       )}
 
       {!isLoading && (
