@@ -398,7 +398,6 @@ export default function App() {
               description="Everyday shampoos and conditioners for every hair type."
               products={products.haircare}
               isTabbed={true}
-              bgPaper={true}
               {...sectionProps}
             />
           )}
@@ -421,7 +420,6 @@ export default function App() {
               tagline="Lip care"
               description="Small tubes, big habit."
               products={products.lipbalm}
-              bgPaper={true}
               {...sectionProps}
             />
           )}
