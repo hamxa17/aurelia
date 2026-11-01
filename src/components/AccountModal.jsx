@@ -79,7 +79,7 @@ export default function AccountModal({ isOpen, user, onClose }) {
             {step === 'email' ? (
               <>
                 <form className="admin-form" onSubmit={handleSendCode}>
-                  <input type="email" className="admin-input" placeholder="you@email.com" autoComplete="email"
+                  <input type="email" className="admin-input" placeholder="Enter your email" autoComplete="email"
                     required autoFocus value={email} onChange={(e) => setEmail(e.target.value)} />
                   {error && <div className="admin-error" role="alert">{error}</div>}
                   <button type="submit" className="admin-btn" disabled={isBusy}>
