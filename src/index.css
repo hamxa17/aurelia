@@ -41,7 +41,7 @@ h1,h2,h3,.display{
   margin:0;
 }
 .label{
-  font-family:'Space Mono', monospace;
+  font-family:'Plus Jakarta Sans', sans-serif;
   text-transform:uppercase;
   letter-spacing:.14em;
   font-size:12px;
@@ -98,7 +98,7 @@ button{font-family:inherit; cursor:pointer;}
 .nav__cart:active{transform:scale(.96);}
 .nav__cart-count{
   background:var(--gold); color:var(--berry); border-radius:100px;
-  font-family:'Space Mono',monospace; font-size:11.5px; min-width:19px; height:19px;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:11.5px; min-width:19px; height:19px;
   display:flex; align-items:center; justify-content:center; padding:0 4px;
   transition:transform var(--dur-s) var(--ease);
 }
@@ -145,7 +145,7 @@ body.menu-open .mobile-menu a{opacity:1; transform:translateY(0);}
 .mobile-menu a:nth-child(6){transition-delay:.38s;}
 .mobile-menu__foot{opacity:0; transform:translateY(16px); transition:opacity .5s var(--ease) .4s, transform .5s var(--ease) .4s; margin-top:22px;}
 body.menu-open .mobile-menu__foot{opacity:1; transform:translateY(0);}
-.mobile-menu__foot p{color:var(--gold-soft); font-family:'Space Mono',monospace; font-size:12px; letter-spacing:.1em;}
+.mobile-menu__foot p{color:var(--gold-soft); font-family:'Plus Jakarta Sans',sans-serif; font-size:12px; letter-spacing:.1em;}
 
 /* ============ HERO ============ */
 .hero{
@@ -248,19 +248,19 @@ body.menu-open .mobile-menu__foot{opacity:1; transform:translateY(0);}
 @keyframes bloomPop{0%{transform:scale(1) rotate(0);}50%{transform:scale(1.18) rotate(20deg);}100%{transform:scale(1) rotate(0);}}
 .card__sample{
   position:absolute; top:10px; left:10px; z-index:3; background:rgba(255,253,249,.88); color:var(--ink-soft);
-  font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:10px; letter-spacing:.08em; text-transform:uppercase;
   padding:4px 8px; border-radius:100px; border:1px solid var(--line);
 }
 .card__badge{
   position:absolute; top:10px; right:10px; z-index:3; background:var(--berry); color:var(--ivory);
-  font-family:'Space Mono',monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:10px; letter-spacing:.06em; text-transform:uppercase;
   padding:4px 9px; border-radius:100px;
 }
 .card__name{font-size:15.5px; font-weight:700; font-family:'Fraunces',serif;}
 .card__note{font-size:12.5px; margin-top:2px;}
 .card__meta{display:flex; align-items:center; justify-content:space-between; margin-top:2px;}
 .card__price{
-  display:flex; align-items:center; gap:6px; font-family:'Space Mono',monospace; font-size:12.5px;
+  display:flex; align-items:center; gap:6px; font-family:'Plus Jakarta Sans',sans-serif; font-size:12.5px;
   border:1px solid var(--line); border-radius:100px; padding:6px 12px;
 }
 .card__actions{display:flex; align-items:center; gap:8px;}
@@ -273,7 +273,7 @@ body.menu-open .mobile-menu__foot{opacity:1; transform:translateY(0);}
   transition:background var(--dur-s) var(--ease);
 }
 .stepper button:hover{background:rgba(255,255,255,.12);}
-.stepper__val{font-family:'Space Mono',monospace; font-size:13px; min-width:16px; text-align:center;}
+.stepper__val{font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; min-width:16px; text-align:center;}
 .btn-add{
   border:none; background:var(--gold); color:var(--berry); font-weight:700; font-size:12.5px;
   border-radius:100px; padding:0 16px; height:36px; white-space:nowrap;
@@ -385,7 +385,7 @@ body.cart-open .cart-drawer{transform:translateX(0);}
 .cart-item__remove{background:none; border:none; color:var(--rose-deep); font-size:12px; text-decoration:underline; padding:0;}
 .cart-empty{padding:60px 0; text-align:center; color:var(--ink-soft);}
 .cart-drawer__foot{padding:22px 24px; border-top:1px solid var(--line);}
-.cart-drawer__subtotal{display:flex; justify-content:space-between; font-family:'Space Mono',monospace; font-size:14px; margin-bottom:14px;}
+.cart-drawer__subtotal{display:flex; justify-content:space-between; font-family:'Plus Jakarta Sans',sans-serif; font-size:14px; margin-bottom:14px;}
 .cart-checkout{width:100%; background:var(--ink); color:var(--ivory); border:none; padding:16px; border-radius:100px; font-weight:700; font-size:14.5px;}
 .cart-checkout:hover{background:var(--berry);}
 
@@ -538,7 +538,7 @@ body.qv-open .qv-modal {
 }
 
 .qv-price {
-  font-family: 'Space Mono', monospace;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 17px;
   margin-top: 10px;
   color: var(--rose-deep);
@@ -779,13 +779,13 @@ body.qv-open .qv-modal {
 .admin-section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .admin-table-container { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-sm); }
 .admin-table { width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left; }
-.admin-table th { background: var(--ivory); padding: 10px 14px; font-family: 'Space Mono', monospace; font-size: 11px; text-transform: uppercase; color: var(--ink-soft); border-bottom: 1px solid var(--line); }
+.admin-table th { background: var(--ivory); padding: 10px 14px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 11px; text-transform: uppercase; color: var(--ink-soft); border-bottom: 1px solid var(--line); }
 .admin-table td { padding: 12px 14px; border-bottom: 1px solid rgba(36,19,24,0.06); vertical-align: middle; }
 .admin-item-cell { display: flex; align-items: center; gap: 10px; }
 .admin-swatch-dot { width: 16px; height: 16px; border-radius: 50%; flex: 0 0 auto; border: 1px solid var(--line); }
 .admin-item-name { font-weight: 700; font-family: 'Fraunces', serif; }
 .admin-item-note { font-size: 12px; color: var(--ink-soft); }
-.admin-cat-badge { font-family: 'Space Mono', monospace; font-size: 11px; background: var(--ivory); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--line); }
+.admin-cat-badge { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 11px; background: var(--ivory); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--line); }
 .admin-action-edit { background: none; border: none; color: var(--berry); font-weight: 700; cursor: pointer; margin-right: 12px; }
 .admin-action-delete { background: none; border: none; color: var(--rose-deep); font-weight: 700; cursor: pointer; }
 
@@ -822,7 +822,7 @@ body.qv-open .qv-modal {
 
 /* ============ PRODUCT CARD: brand ============ */
 .card__brand {
-  font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
   color: var(--rose-deep); margin-bottom: 2px;
 }
 
@@ -842,10 +842,10 @@ body.qv-open .qv-modal {
 .checkout-area input { position: absolute; opacity: 0; pointer-events: none; }
 .checkout-area.active { border-color: var(--berry); background: var(--paper); box-shadow: 0 0 0 1px var(--berry); }
 .checkout-area:focus-within { outline: 2px solid var(--gold); outline-offset: 2px; }
-.checkout-area__fee { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--ink-soft); font-weight: 400; }
+.checkout-area__fee { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; color: var(--ink-soft); font-weight: 400; }
 .checkout-summary { margin: 14px 0 6px; padding: 14px 16px; border-radius: var(--radius-sm); background: var(--ivory); border: 1px solid var(--line); }
 .checkout-line { display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; padding: 3px 0; }
-.checkout-line span:last-child { font-family: 'Space Mono', monospace; white-space: nowrap; }
+.checkout-line span:last-child { font-family: 'Plus Jakarta Sans', sans-serif; white-space: nowrap; }
 .checkout-line.muted { color: var(--ink-soft); }
 .checkout-line.total { font-weight: 700; border-top: 1px solid var(--line); margin-top: 6px; padding-top: 8px; }
 .checkout-done { padding: 52px 28px 36px; text-align: center; display: flex; flex-direction: column; align-items: center; }
@@ -857,7 +857,7 @@ body.qv-open .qv-modal {
 .checkout-wa:hover { background: #17633e; }
 
 /* ============ ACCOUNT ============ */
-.account-code { text-align: center; font-family: 'Space Mono', monospace; font-size: 22px; letter-spacing: .3em; }
+.account-code { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; letter-spacing: .3em; }
 .account-view { padding: 34px 28px 28px; }
 .account-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-right: 28px; }
 .account-email { font-weight: 700; word-break: break-all; }
@@ -869,7 +869,7 @@ body.qv-open .qv-modal {
 
 /* ============ ORDER STATUS PILLS ============ */
 .order-status {
-  font-family: 'Space Mono', monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em;
   padding: 3px 9px; border-radius: 100px; background: var(--ivory); border: 1px solid var(--line); white-space: nowrap;
 }
 .order-status--pending { background: #F3E3B8; border-color: #e2c97f; color: #6b4f0c; }
@@ -886,7 +886,7 @@ body.qv-open .qv-modal {
 .admin-tabs { flex-wrap: wrap; }
 .orders-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .orders-filters .admin-tab { text-transform: capitalize; }
-.orders-filters__count { margin-left: 6px; opacity: .6; font-family: 'Space Mono', monospace; font-size: 11px; }
+.orders-filters__count { margin-left: 6px; opacity: .6; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 11px; }
 .orders-list { display: flex; flex-direction: column; gap: 10px; }
 .order-card { border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--paper); overflow: hidden; }
 .order-card--new { border-color: #e2c97f; box-shadow: inset 4px 0 0 var(--gold); }
@@ -894,10 +894,10 @@ body.qv-open .qv-modal {
   width: 100%; display: grid; grid-template-columns: 70px 1fr auto auto auto; gap: 12px; align-items: center;
   padding: 12px 16px; background: none; border: none; text-align: left; font: inherit; color: inherit; cursor: pointer;
 }
-.order-card__num { font-family: 'Space Mono', monospace; font-weight: 700; }
+.order-card__num { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; }
 .order-card__who { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .order-card__when { font-size: 12.5px; color: var(--ink-soft); }
-.order-card__total { font-family: 'Space Mono', monospace; font-weight: 700; }
+.order-card__total { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; }
 .order-card__body { padding: 4px 16px 16px; border-top: 1px solid var(--line); }
 .order-card__body p { font-size: 13.5px; margin: 4px 0; }
 .order-card__body a { color: var(--berry); text-decoration: underline; }
@@ -960,7 +960,7 @@ body.menu-open .mobile-menu__flower{opacity:.95; translate:0 0;}
 .pdp__title{font-size:clamp(30px,4vw,46px); line-height:1.05; margin:4px 0 6px;}
 .pdp__note{color:var(--ink-soft);}
 .pdp__rating{margin-top:8px; font-size:13px; color:var(--ink-soft);}
-.pdp__price{font-family:'Space Mono',monospace; font-size:26px; font-weight:700; margin:18px 0 8px;}
+.pdp__price{font-family:'Plus Jakarta Sans',sans-serif; font-size:26px; font-weight:700; margin:18px 0 8px;}
 .pdp__buy{display:flex; gap:12px; margin:20px 0 18px;}
 .pdp__buy .btn-add--qv{flex:1; height:48px; font-size:14px;}
 .pdp__buy .stepper--qv{height:48px;}
@@ -973,7 +973,7 @@ body.menu-open .mobile-menu__flower{opacity:.95; translate:0 0;}
 @media(max-width:820px){ .pdp{padding-top:100px;} .pdp__grid{grid-template-columns:1fr; gap:22px;} }
 
 /* ============ STOCK ============ */
-.stock{font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase; padding:4px 9px; border-radius:100px; white-space:nowrap;}
+.stock{font-family:'Plus Jakarta Sans',sans-serif; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase; padding:4px 9px; border-radius:100px; white-space:nowrap;}
 .stock--low{background:#F3E3B8; color:#6b4f0c;}
 .stock--out{background:#ece3e5; color:#7A2A38;}
 .stock--ok{background:#DCE3C8; color:#3E4B24; display:inline-block;}
@@ -1002,7 +1002,7 @@ body.menu-open .mobile-menu__flower{opacity:.95; translate:0 0;}
 .search-item__img img{width:100%; height:100%; object-fit:contain;} .search-item__img .bloom{width:55%;}
 .search-item__text{flex:1; display:flex; flex-direction:column; gap:2px; align-items:flex-start;}
 .search-item__name{font-family:'Fraunces',serif; font-weight:700;}
-.search-item__price{font-family:'Space Mono',monospace; font-weight:700;}
+.search-item__price{font-family:'Plus Jakarta Sans',sans-serif; font-weight:700;}
 
 .grid > *{min-width:0;}
 .card__meta{flex-wrap:wrap; gap:6px;}
@@ -1036,3 +1036,74 @@ body.menu-open .mobile-menu__flower{opacity:.95; translate:0 0;}
 .card--skeleton{pointer-events:none;}
 @keyframes shimmer{from{background-position:100% 0;} to{background-position:0 0;}}
 @media(prefers-reduced-motion:reduce){ .skeleton{animation:none;} }
+
+
+/* =====================================================================
+   PREMIUM PASS — one photo style, quieter buying, cleaner type
+   ===================================================================== */
+
+/* -- type: serif + sans, sentence case (the hero keeps its own look) -- */
+.label{font-family:'Plus Jakarta Sans',sans-serif; text-transform:none; letter-spacing:0; font-size:13px; font-weight:600;}
+.hero__eyebrow.label{font-family:'Space Mono',monospace; text-transform:uppercase; letter-spacing:.14em; font-size:12px; font-weight:400;}
+.section-tag{font-size:13.5px;}
+.stock, .card__badge, .card__sample{text-transform:none; letter-spacing:0; font-weight:600;}
+.stock{font-size:11.5px;}
+.card__badge{font-size:11px;}
+
+/* -- product visual: the same treatment everywhere -- */
+.pv{position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(120% 90% at 50% 18%, rgba(255,255,255,.55), transparent 60%), var(--pv-bg);}
+.pv__img{position:relative; z-index:1; width:80%; height:84%; object-fit:contain; mix-blend-mode:multiply; transform:translateY(-3%);}
+.pv__shadow{position:absolute; z-index:0; left:50%; bottom:9%; width:52%; height:7%; translate:-50% 0;
+  background:radial-gradient(closest-side, rgba(60,22,30,.28), transparent); filter:blur(2px);}
+.pv__type{position:absolute; inset:9%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+  text-align:center; padding:12px; border:1px solid color-mix(in srgb, var(--pv-fg) 45%, transparent); border-radius:10px;
+  color:color-mix(in srgb, var(--pv-fg) 55%, #2a1418);}
+.pv__brand{font-size:12.5px; font-weight:600; opacity:.85;}
+.pv__bloom{display:block; width:42%; max-width:120px; color:var(--pv-fg); opacity:.92;}
+.pv__bloom svg{display:block; width:100%; height:auto;}
+.pv__bloom svg circle{fill:var(--pv-bg);}
+.pv__bloom--small{width:50%;}
+.card__swatch.pv::after{content:none;}
+.card__swatch .pv__img{transition:transform .5s var(--ease);}
+.card:hover .card__swatch .pv__img{transform:translateY(-6%) scale(1.03);}
+.card:hover .pv__bloom{animation:bloomPop .6s var(--ease);}
+
+/* -- card: product first, quieter buying -- */
+.card{gap:14px;}
+.card__brand{font-family:'Plus Jakarta Sans',sans-serif; font-size:12px; letter-spacing:0; text-transform:none; font-weight:600; color:var(--rose-deep); margin-bottom:3px;}
+.card__name{font-size:16px; line-height:1.25;}
+.card__note{font-size:12.5px; margin-top:4px; color:var(--ink-soft);}
+.card__text{flex:1;}
+.card__buy{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.card__buy .card__price{border:none; padding:0; font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:700; color:var(--ink);}
+.btn-add--slim{flex:none; margin-left:auto; height:34px; padding:0 14px; font-size:13px; font-weight:700;
+  background:var(--gold); color:var(--berry); border:none;}
+.btn-add--slim:hover{background:var(--gold-soft); color:var(--berry);}
+.btn-add--slim.added{background:var(--berry); color:var(--ivory);}
+.btn-add--slim:disabled{background:#d9cfd1; color:#7a6a6e;}
+.btn-add--slim svg{opacity:.85;}
+@media(max-width:520px){ .btn-add--slim{padding:0 11px; height:32px;} .card__buy .card__price{font-size:14px;} }
+
+/* -- product page -- */
+.pdp__visual.pv{border:none;}
+.pdp__visual .pv__img{width:66%; height:76%;}
+.pdp__visual .pv__bloom{width:30%; max-width:170px;}
+.pdp__price{font-family:'Plus Jakarta Sans',sans-serif; font-size:24px;}
+.pdp__buy .stepper--qv{width:auto; padding:0 4px;}
+.pdp__buy .stepper--qv button{width:42px; height:48px; font-size:18px;}
+.pdp__buy .stepper--qv .stepper__val{min-width:22px; font-size:15px; font-weight:600;}
+.pdp__share-label{font-size:13px; font-weight:600; color:var(--ink-soft);}
+.pdp__reviews{margin-top:36px;}
+.reviews__empty{font-size:14.5px; color:var(--ink-soft);}
+.reviews__empty .qv-link{font-size:inherit;}
+
+/* -- thumbnails in search and bag -- */
+.search-item__img.pv, .cart-item__swatch.pv{border-radius:12px;}
+.search-item__img .pv__img, .cart-item__swatch .pv__img{width:84%; height:84%; transform:none;}
+.search-item__img .pv__shadow, .cart-item__swatch .pv__shadow{display:none;}
+.search-item__price{font-family:'Plus Jakarta Sans',sans-serif;}
+
+/* -- menu tagline sits above the links -- */
+.mobile-menu__foot--top{margin:0 0 26px;}
+.mobile-menu__foot--top p{font-family:'Space Mono',monospace; text-transform:uppercase; letter-spacing:.14em;}

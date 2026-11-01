@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ACCENTS } from '../data/products';
-import { formatTaka, productSlug, categoryLabelOf } from '../data/catalog';
+import { formatTaka, productSlug, categoryLabelOf, noteDetail } from '../data/catalog';
+import ProductVisual from './ProductVisual';
 import BloomShape from './BloomShape';
 import ProductCard from './ProductCard';
 import StockBadge from './StockBadge';
@@ -58,19 +59,12 @@ export default function ProductPage({ product, related, user, isAdmin, settings,
         </nav>
 
         <div className="pdp__grid">
-          <div className="pdp__visual" style={{ background: product.image ? '#fff' : bg }}>
-            {product.badge && <span className="card__badge">{product.badge}</span>}
-            {product.image ? (
-              <img src={product.image} alt={fullName} />
-            ) : (
-              <span className="bloom" style={{ color: fg }}><BloomShape /></span>
-            )}
-          </div>
+          <ProductVisual product={product} className="pdp__visual" />
 
           <div className="pdp__info">
             {product.brand && <div className="card__brand" style={{ fontSize: '12px' }}>{product.brand}</div>}
             <h1 className="pdp__title">{product.name}</h1>
-            <p className="pdp__note">{product.note}</p>
+            {noteDetail(product) && <p className="pdp__note">{noteDetail(product)}</p>}
             {reviewStats.count > 0 && (
               <a className="pdp__rating" href="#reviews">
                 <span className="qv-stars">{stars(Math.round(reviewStats.avg))}</span> {reviewStats.avg.toFixed(1)} · {reviewStats.count} review{reviewStats.count > 1 ? 's' : ''}
@@ -88,7 +82,7 @@ export default function ProductPage({ product, related, user, isAdmin, settings,
                 </div>
               )}
               <button className={`btn-add btn-add--qv ${added ? 'added' : ''}`} disabled={soldOut} onClick={handleAdd}>
-                {soldOut ? 'sold out' : added ? 'added to bag ✓' : 'add to bag'}
+                {soldOut ? 'Sold out' : added ? 'Added to bag' : 'Add to bag'}
               </button>
             </div>
 
@@ -99,23 +93,23 @@ export default function ProductPage({ product, related, user, isAdmin, settings,
             </ul>
 
             <div className="pdp__share">
-              <span className="label">share</span>
+              <span className="pdp__share-label">Share</span>
               <button onClick={copyLink}>{copied ? 'Link copied ✓' : 'Copy link'}</button>
               <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer">Facebook</a>
               <a href={`https://wa.me/?text=${encodeURIComponent(`${fullName} ${url}`)}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
             </div>
 
-            {(product.description || product.note) && (
+            {product.description && (
               <div className="pdp__desc">
                 <h3>About this product</h3>
-                <p style={{ whiteSpace: 'pre-line' }}>{product.description || product.note}</p>
+                <p style={{ whiteSpace: 'pre-line' }}>{product.description}</p>
               </div>
             )}
           </div>
         </div>
 
         <section className="pdp__reviews" id="reviews">
-          <h2>Reviews{reviewStats.count ? ` (${reviewStats.count})` : ''}</h2>
+          {reviewStats.count > 0 && <h2>Reviews ({reviewStats.count})</h2>}
           <Reviews
             productId={product.id}
             user={user}

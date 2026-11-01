@@ -339,3 +339,17 @@ export async function deleteReview(id) {
 // URL-friendly name: "CeraVe Moisturising Cream" -> "cerave-moisturising-cream"
 export const productSlug = (p) =>
   [p.brand, p.name].filter(Boolean).join(' ').toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+// The short line under a product name, without repeating the name.
+// "Keratin Smooth shampoo · 340ml" under "Keratin Smooth Shampoo" becomes "340ml".
+export const noteDetail = (p) => {
+  const note = (p.note || '').trim();
+  if (!note) return '';
+  const nameWords = new Set(`${p.brand || ''} ${p.name || ''}`.toLowerCase().match(/[a-z0-9]+/g) || []);
+  const parts = note.split(/\s*·\s*/);
+  const first = (parts[0].toLowerCase().match(/[a-z0-9]+/g) || []);
+  const squashed = [...nameWords].join('');
+  const repeatsName = first.length > 0 && first.every((w) => nameWords.has(w) || squashed.includes(w));
+  const rest = repeatsName ? parts.slice(1) : parts;
+  return rest.join(' · ');
+};

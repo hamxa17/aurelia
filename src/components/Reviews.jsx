@@ -72,7 +72,10 @@ export default function Reviews({ productId, user, isAdmin, onRequestSignIn, onL
       {!loaded ? (
         <p className="admin-sub">Loading…</p>
       ) : reviews.length === 0 ? (
-        <p className="admin-sub">No reviews yet — be the first.</p>
+        <p className="reviews__empty">
+          No reviews yet.{' '}
+          {!user && <button className="qv-link" onClick={onRequestSignIn}>Sign in to write one</button>}
+        </p>
       ) : (
         <div className="reviews__list">
           {reviews.map((r) => (
@@ -93,7 +96,7 @@ export default function Reviews({ productId, user, isAdmin, onRequestSignIn, onL
         </div>
       )}
 
-      {!user ? (
+      {!user ? (reviews.length === 0 ? null :
         <p className="qv-review-cta">
           <button className="qv-link" onClick={onRequestSignIn}>Sign in</button> to write a review.
         </p>

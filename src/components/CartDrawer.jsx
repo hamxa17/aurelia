@@ -2,6 +2,7 @@ import React from 'react';
 import { ACCENTS } from '../data/products';
 import { formatTaka } from '../data/catalog';
 import BloomShape from './BloomShape';
+import ProductVisual from './ProductVisual';
 
 export default function CartDrawer({ cart, onClose, onUpdateQty, onRemoveItem, onCheckout, deliveryFrom }) {
   const entries = Object.entries(cart);
@@ -21,22 +22,9 @@ export default function CartDrawer({ cart, onClose, onUpdateQty, onRemoveItem, o
             <div className="cart-empty">Your bag is empty — go find something to love.</div>
           ) : (
             entries.map(([id, { product, qty }]) => {
-              const [bg, fg] = ACCENTS[product.accent] || ACCENTS.rose;
               return (
                 <div className="cart-item" key={id} data-id={id}>
-                  <div className="cart-item__swatch" style={{ background: bg, overflow: 'hidden' }}>
-                    {product.image ? (
-                      <img 
-                        src={product.image} 
-                        alt={product.name} 
-                        style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fff' }} 
-                      />
-                    ) : (
-                      <span className="bloom" style={{ color: fg }}>
-                        <BloomShape />
-                      </span>
-                    )}
-                  </div>
+                  <ProductVisual product={product} className="cart-item__swatch" showBadge={false} compact />
                   <div className="cart-item__info">
                     <div className="cart-item__name">{product.brand ? `${product.brand} ` : ''}{product.name}</div>
                     <div className="cart-item__price-each">{formatTaka(product.price)} each</div>

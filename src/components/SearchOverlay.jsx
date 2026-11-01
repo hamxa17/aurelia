@@ -3,6 +3,7 @@ import { ACCENTS } from '../data/products';
 import { formatTaka } from '../data/catalog';
 import BloomShape from './BloomShape';
 import StockBadge from './StockBadge';
+import ProductVisual from './ProductVisual';
 
 const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
@@ -43,12 +44,9 @@ export default function SearchOverlay({ isOpen, products, onClose, onOpenProduct
               <div className="search-empty">Nothing found for “{q}”.</div>
             ) : (
               results.map((p) => {
-                const [bg, fg] = ACCENTS[p.accent] || ACCENTS.rose;
                 return (
                   <button key={p.id} className="search-item" onClick={() => onOpenProduct(p)}>
-                    <span className="search-item__img" style={{ background: p.image ? '#fff' : bg }}>
-                      {p.image ? <img src={p.image} alt="" /> : <span className="bloom" style={{ color: fg }}><BloomShape /></span>}
-                    </span>
+                    <ProductVisual product={p} className="search-item__img" showBadge={false} compact />
                     <span className="search-item__text">
                       {p.brand && <span className="card__brand">{p.brand}</span>}
                       <span className="search-item__name">{p.name}</span>

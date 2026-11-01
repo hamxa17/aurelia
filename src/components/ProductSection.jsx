@@ -67,12 +67,11 @@ export default function ProductSection({
           </div>
           <div className="section__aside">
             <label className="sort">
-              <span className="label">sort</span>
-              <select value={sort} onChange={(e) => setSort(e.target.value)}>
-                <option value="featured">Featured</option>
-                <option value="low">Price: low to high</option>
-                <option value="high">Price: high to low</option>
-                <option value="stock">In stock first</option>
+              <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort products">
+                <option value="featured">Sort: featured</option>
+                <option value="low">Sort: price, low to high</option>
+                <option value="high">Sort: price, high to low</option>
+                <option value="stock">Sort: in stock first</option>
               </select>
             </label>
           </div>

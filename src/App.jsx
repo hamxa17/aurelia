@@ -370,7 +370,7 @@ export default function App() {
             <ProductSection
               id="new-arrivals"
               title="New arrivals"
-              tagline="just landed"
+              tagline="Just landed"
               description="The latest additions to the shelf — restocked often."
               products={products.newArrivals}
               isHorizontalScroll={true}
@@ -382,7 +382,7 @@ export default function App() {
             <ProductSection
               id="skincare"
               title="For the face"
-              tagline="skincare"
+              tagline="Skincare"
               description="Cleansers, serums, sunscreen and moisturisers from brands you already trust."
               products={products.skincare}
               isTabbed={true}
@@ -394,7 +394,7 @@ export default function App() {
             <ProductSection
               id="haircare"
               title="For the hair"
-              tagline="hair care"
+              tagline="Hair care"
               description="Everyday shampoos and conditioners for every hair type."
               products={products.haircare}
               isTabbed={true}
@@ -407,7 +407,7 @@ export default function App() {
             <ProductSection
               id="supplements"
               title="Supplements"
-              tagline="from within"
+              tagline="From within"
               description="Collagen and gluta drinks — imported, sealed, and ready to mix."
               products={products.supplements}
               {...sectionProps}
@@ -418,7 +418,7 @@ export default function App() {
             <ProductSection
               id="lipbalm"
               title="Lip balm"
-              tagline="lip"
+              tagline="Lip care"
               description="Small tubes, big habit."
               products={products.lipbalm}
               bgPaper={true}
