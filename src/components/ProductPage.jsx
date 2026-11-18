@@ -28,6 +28,11 @@ export default function ProductPage({ product, related, user, isAdmin, settings,
   const sizes = sizesOf(product);
   const v = resolveVariant(product, choice.type, choice.size);
   const shown = { ...product, image: v.image, price: v.price }; // photo and price follow the choice
+
+  // Load every type/size photo up front so switching is instant
+  useEffect(() => {
+    [...types, ...sizes].forEach((o) => { if (o.image) { const im = new Image(); im.src = o.image; } });
+  }, [product.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const [bg, fg] = ACCENTS[product.accent] || ACCENTS.rose;
   const soldOut = product.stock === 0;
   const maxQty = Math.min(product.stock ?? 50, 50);
@@ -66,7 +71,7 @@ export default function ProductPage({ product, related, user, isAdmin, settings,
         </nav>
 
         <div className="pdp__grid">
-          <ProductVisual key={v.image} product={shown} className="pdp__visual" />
+          <ProductVisual key={v.image} product={shown} className="pdp__visual" eager />
 
           <div className="pdp__info">
             {product.brand && <div className="card__brand" style={{ fontSize: '12px' }}>{product.brand}</div>}

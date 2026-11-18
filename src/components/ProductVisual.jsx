@@ -4,14 +4,14 @@ import BloomShape from './BloomShape';
 
 // One look for every product: the photo sits on its soft tint with a small shadow underneath.
 // Products without a photo show their name, set in the serif, instead of clip-art.
-export default function ProductVisual({ product, className = '', showBadge = true, compact = false }) {
+export default function ProductVisual({ product, className = '', showBadge = true, compact = false, eager = false }) {
   const [bg, fg] = ACCENTS[product.accent] || ACCENTS.rose;
   return (
     <div className={`pv ${className}`} style={{ '--pv-bg': bg, '--pv-fg': fg }}>
       {showBadge && product.badge && <span className="card__badge">{product.badge}</span>}
       {product.image ? (
         <>
-          <img className="pv__img" src={product.image} alt={[product.brand, product.name].filter(Boolean).join(' ')} loading="lazy" />
+          <img className="pv__img" src={product.image} alt={[product.brand, product.name].filter(Boolean).join(' ')} loading={eager ? 'eager' : 'lazy'} decoding="async" />
           <span className="pv__shadow" aria-hidden="true" />
         </>
       ) : (
