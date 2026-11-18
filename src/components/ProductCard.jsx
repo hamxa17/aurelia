@@ -3,14 +3,17 @@ import { formatTaka, noteDetail } from '../data/catalog';
 import BloomShape from './BloomShape';
 import StockBadge from './StockBadge';
 import ProductVisual from './ProductVisual';
+import { hasOptions, fromPrice } from '../data/variants';
 
 export default function ProductCard({ id, product, onAddToCart, onOpenQuickView }) {
   const [isAdded, setIsAdded] = useState(false);
   const soldOut = product.stock === 0;
   const detail = noteDetail(product);
+  const choose = hasOptions(product); // has sizes or types: pick them on the product page
 
   const handleAdd = (e) => {
     e.stopPropagation();
+    if (choose) { onOpenQuickView(id); return; }
     onAddToCart(id, product, 1);
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 1200);
@@ -25,11 +28,11 @@ export default function ProductCard({ id, product, onAddToCart, onOpenQuickView 
         {detail && <div className="card__note">{detail}</div>}
       </div>
       <div className="card__buy" onClick={(e) => e.stopPropagation()}>
-        <div className="card__price">{formatTaka(product.price)}</div>
+        <div className="card__price">{choose && fromPrice(product) !== undefined ? <span className="card__from">from </span> : null}{formatTaka(choose ? fromPrice(product) : product.price)}</div>
         <StockBadge stock={product.stock} />
-        <button className={`btn-add btn-add--slim ${isAdded ? 'added' : ''}`} onClick={handleAdd} disabled={soldOut} aria-label={`Add ${product.name} to bag`}>
-          {soldOut ? 'Sold out' : isAdded ? 'Added' : 'Add'}
-          <BloomShape width="11" height="11" />
+        <button className={`btn-add btn-add--slim ${isAdded ? 'added' : ''}`} onClick={handleAdd} disabled={soldOut} aria-label={choose ? `Choose options for ${product.name}` : `Add ${product.name} to bag`}>
+          {soldOut ? 'Sold out' : choose ? 'Choose' : isAdded ? 'Added' : 'Add'}
+          {!choose && <BloomShape width="11" height="11" />}
         </button>
       </div>
     </div>

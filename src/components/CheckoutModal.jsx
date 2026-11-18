@@ -150,8 +150,8 @@ export default function CheckoutModal({ isOpen, items, settings, user, onClose, 
             value={form.note} onChange={set('note')} />
 
           <div className="checkout-summary">
-            {items.map(({ product, qty }) => (
-              <div key={product.id} className="checkout-line">
+            {items.map(({ key, product, qty }) => (
+              <div key={key || product.id} className="checkout-line">
                 <span>{product.brand ? `${product.brand} ` : ''}{product.name} × {qty}</span>
                 <span>{formatTaka(product.price * qty)}</span>
               </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import OptionsEditor from './OptionsEditor';
 import { ACCENTS } from '../data/products';
 import {
   CATEGORY_OPTIONS,
@@ -50,6 +51,7 @@ export default function AdminModal({
   const [formStock, setFormStock] = useState('');
   const [formImage, setFormImage] = useState('');
   const [formDescription, setFormDescription] = useState('');
+  const [formOptions, setFormOptions] = useState({ types: [], sizes: [] });
   const [formSuccess, setFormSuccess] = useState('');
 
   // Store settings form
@@ -114,6 +116,7 @@ export default function AdminModal({
     setFormStock(prod.stock ?? '');
     setFormImage(prod.image || '');
     setFormDescription(prod.description || '');
+    setFormOptions({ types: prod.options?.types || [], sizes: prod.options?.sizes || [] });
     setActiveTab('add');
     setFormSuccess('');
     setFormError('');
@@ -131,6 +134,7 @@ export default function AdminModal({
     setFormStock('');
     setFormImage('');
     setFormDescription('');
+    setFormOptions({ types: [], sizes: [] });
     setFormError('');
   };
 
@@ -152,8 +156,9 @@ export default function AdminModal({
 
   const handleSubmitForm = async (e) => {
     e.preventDefault();
-    if (!formName.trim() || formPrice === '' || isBusy || isUploading) return;
-    if (formImage && !/^https:\/\//i.test(formImage)) {
+    const sizePrices = (formOptions.sizes || []).filter((x) => String(x.label || '').trim() && Number(x.price) > 0).map((x) => Number(x.price));
+    if (!formName.trim() || (formPrice === '' && !sizePrices.length) || isBusy || isUploading) return;
+    if (formImage && !/^(https:\/\/|\/)/i.test(formImage)) {
       setFormError('Image link must start with https://');
       return;
     }
@@ -161,7 +166,8 @@ export default function AdminModal({
     const productData = {
       name: formName,
       brand: formBrand,
-      price: parseFloat(formPrice),
+      price: sizePrices.length ? Math.min(...sizePrices) : parseFloat(formPrice), // with sizes, the lowest size price
+      options: formOptions,
       note: formNote.trim() || 'Formulated for your daily ritual',
       accent: formAccent,
       badge: formBadge,
@@ -427,12 +433,13 @@ export default function AdminModal({
                       />
                     </div>
                     <div>
-                      <label className="label">Price (৳) *</label>
+                      <label className="label">Price (৳) {formOptions.sizes?.length ? '(set per size below)' : '*'}</label>
                       <input 
                         type="number" 
                         step="0.01" 
-                        required 
-                        placeholder="e.g. 280" 
+                        required={!formOptions.sizes?.length}
+                        disabled={!!formOptions.sizes?.length}
+                        placeholder={formOptions.sizes?.length ? 'from the sizes' : 'e.g. 280'} 
                         value={formPrice}
                         onChange={(e) => setFormPrice(e.target.value)}
                         className="admin-input"
@@ -572,6 +579,8 @@ export default function AdminModal({
                       className="admin-input"
                     />
                   </div>
+
+                  <OptionsEditor value={formOptions} onChange={setFormOptions} onError={setFormError} />
 
                   <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
                     <button type="submit" className="admin-btn" disabled={isBusy || isUploading}>

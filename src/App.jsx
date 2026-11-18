@@ -18,6 +18,7 @@ import TrustBar from './components/TrustBar';
 import ProductSection from './components/ProductSection';
 import Philosophy from './components/Philosophy';
 import Footer from './components/Footer';
+import { lineKey, resolveVariant } from './data/variants';
 import CartDrawer from './components/CartDrawer';
 import QuickViewModal from './components/QuickViewModal';
 import CheckoutModal from './components/CheckoutModal';
@@ -48,12 +49,15 @@ const writeLocalCart = (lines) => {
 // Combine a saved account cart with whatever the visitor added before signing in
 function mergeCarts(a, b) {
   const map = new Map();
-  [...a, ...b].forEach(({ product_id, qty }) => {
-    if (!product_id || !(qty > 0)) return;
-    map.set(product_id, Math.max(map.get(product_id) || 0, Math.min(qty, 50)));
+  [...a, ...b].forEach((l) => {
+    if (!l?.product_id || !(l.qty > 0)) return;
+    const key = lineKey(l.product_id, l.type, l.size);
+    const prev = map.get(key);
+    map.set(key, { product_id: l.product_id, type: l.type || null, size: l.size || null, qty: Math.max(prev?.qty || 0, Math.min(l.qty, 50)) });
   });
-  return [...map].map(([product_id, qty]) => ({ product_id, qty }));
+  return [...map.values()];
 }
+const keyOf = (l) => lineKey(l.product_id, l.type, l.size);
 
 export default function App() {
   const [productList, setProductList] = useState([]);
@@ -95,6 +99,7 @@ export default function App() {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       // the little flower inside the button is what flies
       const icon = btn.querySelector('svg');
+      if (!icon) return; // "Choose" opens the product page instead of adding
       const a = (icon || btn).getBoundingClientRect();
       const b = bag.getBoundingClientRect();
       const dot = icon ? icon.cloneNode(true) : document.createElement('span');
@@ -251,16 +256,21 @@ export default function App() {
     : null;
 
   // Cart lines joined with live product data (removed products simply drop out)
+  // A line with a size/type shows that choice's price, photo and name
   const cartItems = useMemo(() => {
     const byId = new Map(productList.map((p) => [p.id, p]));
     return cartLines
-      .map(({ product_id, qty }) => ({ product: byId.get(product_id), qty }))
-      .filter((l) => l.product);
+      .map((l) => {
+        const base = byId.get(l.product_id);
+        if (!base) return null;
+        const v = resolveVariant(base, l.type, l.size);
+        if (!v.valid) return null; // that size/type no longer exists
+        const product = { ...base, price: v.price, image: v.image, name: v.label ? `${base.name} · ${v.label}` : base.name };
+        return { key: keyOf(l), product, qty: l.qty, type: v.type, size: v.size };
+      })
+      .filter(Boolean);
   }, [cartLines, productList]);
-  const cart = useMemo(
-    () => Object.fromEntries(cartItems.map((l) => [l.product.id, l])),
-    [cartItems]
-  );
+  const cart = useMemo(() => Object.fromEntries(cartItems.map((l) => [l.key, l])), [cartItems]);
 
   // Sync body CSS classes for modal/drawer visibility
   useEffect(() => { document.body.classList.toggle('cart-open', isCartOpen); }, [isCartOpen]);
@@ -285,27 +295,28 @@ export default function App() {
 
   const totalCartCount = cartItems.reduce((sum, item) => sum + item.qty, 0);
 
-  const handleAddToCart = (id, product, qty = 1) => {
+  const handleAddToCart = (id, product, qty = 1, choice = {}) => {
+    const line = { product_id: id, type: choice.type || null, size: choice.size || null };
+    const key = keyOf(line);
     setCartLines((lines) => {
-      const existing = lines.find((l) => l.product_id === id);
-      if (existing) {
-        return lines.map((l) => (l.product_id === id ? { ...l, qty: Math.min(l.qty + qty, 50) } : l));
+      if (lines.some((l) => keyOf(l) === key)) {
+        return lines.map((l) => (keyOf(l) === key ? { ...l, qty: Math.min(l.qty + qty, 50) } : l));
       }
-      return [...lines, { product_id: id, qty: Math.min(qty, 50) }];
+      return [...lines, { ...line, qty: Math.min(qty, 50) }];
     });
     setIsPulsing(true);
     setTimeout(() => setIsPulsing(false), 500);
   };
 
-  const handleUpdateQty = (id, delta) => {
+  const handleUpdateQty = (key, delta) => {
     setCartLines((lines) =>
       lines
-        .map((l) => (l.product_id === id ? { ...l, qty: Math.min(l.qty + delta, 50) } : l))
+        .map((l) => (keyOf(l) === key ? { ...l, qty: Math.min(l.qty + delta, 50) } : l))
         .filter((l) => l.qty > 0)
     );
   };
 
-  const handleRemoveItem = (id) => setCartLines((lines) => lines.filter((l) => l.product_id !== id));
+  const handleRemoveItem = (key) => setCartLines((lines) => lines.filter((l) => keyOf(l) !== key));
 
   const openAccount = () => {
     setActiveQuickViewId(null);
@@ -332,7 +343,7 @@ export default function App() {
 
       {productFromUrl ? (
         <ProductPage product={productFromUrl} related={related} user={user} isAdmin={isAdminAuthenticated} settings={settings}
-          onAddToCart={(id, p, q) => { handleAddToCart(id, p, q); setIsCartOpen(true); }}
+          onAddToCart={(id, p, q, c) => { handleAddToCart(id, p, q, c); setIsCartOpen(true); }}
           onOpenProduct={openProduct} onRequestSignIn={openAccount} onGoHome={goHome} />
       ) : (<>
       <Hero />

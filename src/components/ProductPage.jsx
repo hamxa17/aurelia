@@ -6,21 +6,28 @@ import BloomShape from './BloomShape';
 import ProductCard from './ProductCard';
 import StockBadge from './StockBadge';
 import Reviews, { stars } from './Reviews';
+import { typesOf, sizesOf, resolveVariant, defaultChoice } from '../data/variants';
 
 export default function ProductPage({ product, related, user, isAdmin, settings, onAddToCart, onOpenProduct, onRequestSignIn, onGoHome }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [reviewStats, setReviewStats] = useState({ count: 0, avg: 0 });
+  const [choice, setChoice] = useState(() => defaultChoice(product));
 
   useEffect(() => {
     window.scrollTo(0, 0);
     setQty(1);
+    setChoice(defaultChoice(product));
     setReviewStats({ count: 0, avg: 0 });
     document.title = `${[product.brand, product.name].filter(Boolean).join(' ')} — Aurelia`;
     return () => { document.title = 'Aurelia — beauty, undiluted'; };
   }, [product.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const types = typesOf(product);
+  const sizes = sizesOf(product);
+  const v = resolveVariant(product, choice.type, choice.size);
+  const shown = { ...product, image: v.image, price: v.price }; // photo and price follow the choice
   const [bg, fg] = ACCENTS[product.accent] || ACCENTS.rose;
   const soldOut = product.stock === 0;
   const maxQty = Math.min(product.stock ?? 50, 50);
@@ -41,7 +48,7 @@ export default function ProductPage({ product, related, user, isAdmin, settings,
   };
 
   const handleAdd = () => {
-    onAddToCart(product.id, product, qty);
+    onAddToCart(product.id, product, qty, { type: v.type, size: v.size });
     setAdded(true);
     setTimeout(() => setAdded(false), 1200);
   };
@@ -59,7 +66,7 @@ export default function ProductPage({ product, related, user, isAdmin, settings,
         </nav>
 
         <div className="pdp__grid">
-          <ProductVisual product={product} className="pdp__visual" />
+          <ProductVisual key={v.image} product={shown} className="pdp__visual" />
 
           <div className="pdp__info">
             {product.brand && <div className="card__brand" style={{ fontSize: '12px' }}>{product.brand}</div>}
@@ -70,7 +77,32 @@ export default function ProductPage({ product, related, user, isAdmin, settings,
                 <span className="qv-stars">{stars(Math.round(reviewStats.avg))}</span> {reviewStats.avg.toFixed(1)} · {reviewStats.count} review{reviewStats.count > 1 ? 's' : ''}
               </a>
             )}
-            <div className="pdp__price">{formatTaka(product.price)}</div>
+            <div className="pdp__price">{formatTaka(v.price)}</div>
+
+            {types.length > 0 && (
+              <fieldset className="pdp__choice">
+                <legend>Type</legend>
+                <div className="pdp__chips">
+                  {types.map((t) => (
+                    <button key={t.label} type="button" className="chip" aria-pressed={choice.type === t.label}
+                      onClick={() => setChoice((c) => ({ ...c, type: t.label }))}>{t.label}</button>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+            {sizes.length > 0 && (
+              <fieldset className="pdp__choice">
+                <legend>Size</legend>
+                <div className="pdp__chips">
+                  {sizes.map((sz) => (
+                    <button key={sz.label} type="button" className="chip chip--size" aria-pressed={choice.size === sz.label}
+                      onClick={() => setChoice((c) => ({ ...c, size: sz.label }))}>
+                      <span>{sz.label}</span><span className="chip__price">{formatTaka(sz.price)}</span>
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            )}
             <StockBadge stock={product.stock} large />
 
             <div className="pdp__buy">

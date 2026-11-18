@@ -6,7 +6,7 @@ export const MAX_IMAGE_BYTES = 3 * 1024 * 1024; // keep in sync with schema.sql
 
 // Order of the tabs inside "For the face" / "For the hair"
 export const SUBCATEGORIES = {
-  skincare: ['Facewash', 'Face Scrub', 'Facial Serum', 'Moisturiser', 'Sunscreen', 'Super Whips', 'Body Care'],
+  skincare: ['Facewash', 'Face Scrub', 'Super Whips', 'Facial Serum', 'Sunscreen', 'Soap', 'Moisturiser', 'Body Care'],
   haircare: ['Shampoo', 'Conditioner', 'Hair Treatments', 'Power Bonds', 'Hair Masks'],
 };
 
@@ -40,7 +40,20 @@ const fromRow = (r) => ({
   description: r.description || '',
   section: r.section,
   subcategory: r.subcategory,
+  options: r.options || null,
 });
+
+// Keep only filled-in choices; null when there are none
+function cleanOptions(o) {
+  const types = (o?.types || [])
+    .map((t) => ({ label: String(t.label || '').trim(), ...(t.image ? { image: t.image } : {}) }))
+    .filter((t) => t.label);
+  const sizes = (o?.sizes || [])
+    .map((s) => ({ label: String(s.label || '').trim(), price: Number(s.price), ...(s.image ? { image: s.image } : {}) }))
+    .filter((s) => s.label && s.price > 0);
+  if (!types.length && !sizes.length) return null;
+  return { ...(types.length ? { types } : {}), ...(sizes.length ? { sizes } : {}) };
+}
 
 const toRow = (p) => ({
   name: p.name.trim(),
@@ -54,6 +67,7 @@ const toRow = (p) => ({
   description: p.description?.trim() || null,
   section: p.section,
   subcategory: p.subcategory || null,
+  options: cleanOptions(p.options),
 });
 
 // Preview catalog for when the database isn't connected (e.g. first run on a new computer)
@@ -245,7 +259,7 @@ export async function placeOrder({ name, phone, address, area, note }, cartItems
     p_address: address,
     p_area: area,
     p_note: note || null,
-    p_items: cartItems.map(({ product, qty }) => ({ product_id: product.id, qty })),
+    p_items: cartItems.map(({ product, qty, type, size }) => ({ product_id: product.id, qty, type: type || null, size: size || null })),
   });
   if (error) throw new Error(error.message || 'Could not place the order.');
   const row = Array.isArray(data) ? data[0] : data;
@@ -253,7 +267,7 @@ export async function placeOrder({ name, phone, address, area, note }, cartItems
 }
 
 const ORDER_SELECT =
-  'id, order_number, customer_name, phone, address, area, note, subtotal, delivery_fee, total, status, created_at, order_items(name, brand, price, qty)';
+  'id, order_number, customer_name, phone, address, area, note, subtotal, delivery_fee, total, status, created_at, order_items(name, brand, price, qty, variant)';
 
 // Admin: all orders. Customer: only their own (enforced by the database).
 export async function fetchOrders({ limit = 100, userId = null } = {}) {

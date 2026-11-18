@@ -4,6 +4,7 @@ import { formatTaka } from '../data/catalog';
 import BloomShape from './BloomShape';
 import StockBadge from './StockBadge';
 import ProductVisual from './ProductVisual';
+import { hasOptions, fromPrice } from '../data/variants';
 
 const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
@@ -52,7 +53,7 @@ export default function SearchOverlay({ isOpen, products, onClose, onOpenProduct
                       <span className="search-item__name">{p.name}</span>
                       <StockBadge stock={p.stock} />
                     </span>
-                    <span className="search-item__price">{formatTaka(p.price)}</span>
+                    <span className="search-item__price">{hasOptions(p) ? 'from ' : ''}{formatTaka(fromPrice(p))}</span>
                   </button>
                 );
               })

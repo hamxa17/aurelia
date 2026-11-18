@@ -3,7 +3,8 @@
 //
 // Secrets to set (Supabase → Edge Functions → Secrets):
 //   RESEND_API_KEY – from resend.com → API Keys
-//   ALERT_EMAIL    – where alerts go (the email your Resend account was created with)
+//   ALERT_EMAIL    – your own address; alerts also go to the shop Gmail below
+// Sent from orders@aureliabeauty.me (domain verified in Resend).
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are provided automatically.
 //
 // Safety: the function only emails about orders it can find in the database that were
@@ -30,7 +31,7 @@ Deno.serve(async (req) => {
   const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
   const { data: o } = await db
     .from('orders')
-    .select('order_number, customer_name, phone, address, area, note, subtotal, delivery_fee, total, created_at, order_items(name, brand, price, qty)')
+    .select('order_number, customer_name, phone, address, area, note, subtotal, delivery_fee, total, created_at, order_items(name, brand, price, qty, variant)')
     .eq('id', orderId)
     .maybeSingle();
 
@@ -38,8 +39,8 @@ Deno.serve(async (req) => {
     return new Response('ignored');
   }
 
-  const rows = (o.order_items as { name: string; brand: string | null; price: number; qty: number }[])
-    .map((i) => `<tr><td>${esc([i.brand, i.name].filter(Boolean).join(' '))} × ${i.qty}</td><td align="right">${taka(i.price * i.qty)}</td></tr>`)
+  const rows = (o.order_items as { name: string; brand: string | null; price: number; qty: number; variant: string | null }[])
+    .map((i) => `<tr><td>${esc([i.brand, i.name].filter(Boolean).join(' '))}${i.variant ? ` (${esc(i.variant)})` : ''} × ${i.qty}</td><td align="right">${taka(i.price * i.qty)}</td></tr>`)
     .join('');
 
   const html = `
@@ -59,8 +60,8 @@ Deno.serve(async (req) => {
     method: 'POST',
     headers: { Authorization: `Bearer ${Deno.env.get('RESEND_API_KEY')}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      from: 'Aurelia Orders <onboarding@resend.dev>',
-      to: [Deno.env.get('ALERT_EMAIL')],
+      from: 'Aurelia Orders <orders@aureliabeauty.me>',
+      to: [...new Set([Deno.env.get('ALERT_EMAIL'), 'aurelia.skins576@gmail.com'].filter(Boolean))],
       subject: `New order #${o.order_number} — ${taka(o.total)} — ${o.customer_name}`,
       html,
     }),

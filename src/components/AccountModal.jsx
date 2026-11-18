@@ -140,7 +140,7 @@ export default function AccountModal({ isOpen, user, onClose }) {
                     </div>
                     <div className="account-order__items">
                       {o.order_items.map((it, i) => (
-                        <span key={i}>{it.brand ? `${it.brand} ` : ''}{it.name} × {it.qty}</span>
+                        <span key={i}>{it.brand ? `${it.brand} ` : ''}{it.name}{it.variant ? ` · ${it.variant}` : ''} × {it.qty}</span>
                       ))}
                     </div>
                   </div>

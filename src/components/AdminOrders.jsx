@@ -104,7 +104,7 @@ export default function AdminOrders({ onPendingCount }) {
                         <div className="label">Items ({itemCount})</div>
                         {o.order_items.map((it, i) => (
                           <div key={i} className="checkout-line">
-                            <span>{it.brand ? `${it.brand} ` : ''}{it.name} × {it.qty}</span>
+                            <span>{it.brand ? `${it.brand} ` : ''}{it.name}{it.variant ? ` · ${it.variant}` : ''} × {it.qty}</span>
                             <span>{formatTaka(it.price * it.qty)}</span>
                           </div>
                         ))}
