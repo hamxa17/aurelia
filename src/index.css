@@ -1132,3 +1132,8 @@ body.menu-open .mobile-menu__flower{opacity:.95; translate:0 0;}
 .opt-remove{width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:#fff; color:var(--ink); font-size:18px; line-height:1; cursor:pointer;}
 .opt-add{margin-top:2px; padding:8px 14px; font-size:13px;}
 @media(max-width:520px){ .opt-row{grid-template-columns:1fr 84px 48px 28px;} }
+
+/* sign-in: resend + change email */
+.account-resend{display:flex; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; margin-top:4px; font-size:14px; color:var(--ink-soft);}
+.account-resend .qv-link{min-height:44px; padding:0 4px;}
+.account-resend .qv-link:disabled{opacity:.55; cursor:default; text-decoration:none;}

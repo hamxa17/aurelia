@@ -17,6 +17,14 @@ export default function AccountModal({ isOpen, user, onClose }) {
   const [error, setError] = useState('');
   const [isBusy, setIsBusy] = useState(false);
   const [orders, setOrders] = useState(null);
+  const [wait, setWait] = useState(0); // seconds until another code can be sent
+
+  // Count down the resend timer
+  useEffect(() => {
+    if (wait <= 0) return undefined;
+    const t = setTimeout(() => setWait((w) => w - 1), 1000);
+    return () => clearTimeout(t);
+  }, [wait]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -37,14 +45,24 @@ export default function AccountModal({ isOpen, user, onClose }) {
   if (!isOpen) return null;
 
   const handleSendCode = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
+    if (isBusy || wait > 0) return;
     setIsBusy(true);
     setError('');
     try {
       await sendLoginCode(email);
       setStep('code');
+      setCode('');
+      setWait(60);
     } catch (err) {
-      setError(err.message);
+      if (/wait a minute/i.test(err.message)) {
+        // A code was sent moments ago: let them type it, and resend once the timer runs out
+        setStep('code');
+        setWait(60);
+        setError('A code was already sent a moment ago. Check your inbox (and spam), or resend when the timer ends.');
+      } else {
+        setError(err.message);
+      }
     } finally {
       setIsBusy(false);
     }
@@ -83,16 +101,15 @@ export default function AccountModal({ isOpen, user, onClose }) {
                     required autoFocus value={email} onChange={(e) => setEmail(e.target.value)} />
                   {error && <div className="admin-error" role="alert">{error}</div>}
                   <button type="submit" className="admin-btn" disabled={isBusy}>
-                    {isBusy ? 'Sending…' : 'Email me a sign-in link'}
+                    {isBusy ? 'Sending…' : 'Email me a sign-in code'}
                   </button>
                 </form>
               </>
             ) : (
               <>
                 <p className="admin-sub">
-                  We sent an email to <strong>{email}</strong>. Tap the <strong>sign-in link</strong> in it and
-                  you'll come back here signed in. If the email shows a 6-digit code instead, type it below.
-                  Check spam if you don't see it.
+                  We emailed a 6-digit code to <strong>{email}</strong>. Type it below, or tap the link in the
+                  email. It can take a minute to arrive, so check spam too.
                 </p>
                 <form className="admin-form" onSubmit={handleVerify}>
                   <input className="admin-input account-code" inputMode="numeric" autoComplete="one-time-code"
@@ -102,9 +119,15 @@ export default function AccountModal({ isOpen, user, onClose }) {
                   <button type="submit" className="admin-btn" disabled={isBusy}>
                     {isBusy ? 'Checking…' : 'Sign in with code'}
                   </button>
-                  <button type="button" className="admin-btn-secondary" onClick={() => { setStep('email'); setError(''); }}>
-                    Use a different email
-                  </button>
+                  <div className="account-resend">
+                    <button type="button" className="qv-link" onClick={handleSendCode} disabled={isBusy || wait > 0}>
+                      {wait > 0 ? `Resend code in ${wait}s` : 'Resend code'}
+                    </button>
+                    <span aria-hidden="true">·</span>
+                    <button type="button" className="qv-link" onClick={() => { setStep('email'); setError(''); setCode(''); }}>
+                      Use a different email
+                    </button>
+                  </div>
                 </form>
               </>
             )}

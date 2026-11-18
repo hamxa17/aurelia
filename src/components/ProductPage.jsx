@@ -20,8 +20,48 @@ export default function ProductPage({ product, related, user, isAdmin, settings,
     setQty(1);
     setChoice(defaultChoice(product));
     setReviewStats({ count: 0, avg: 0 });
-    document.title = `${[product.brand, product.name].filter(Boolean).join(' ')} — Aurelia`;
-    return () => { document.title = 'Aurelia — beauty, undiluted'; };
+    const name = [product.brand, product.name].filter(Boolean).join(' ');
+    document.title = `${name} — price in Bangladesh | Aurelia`;
+
+    // Tell Google what this page sells (name, photo, price, stock) and keep the link canonical
+    const pageUrl = `https://www.aureliabeauty.me/product/${productSlug(product)}`;
+    const sizeList = sizesOf(product);
+    const prices = sizeList.length ? sizeList.map((x) => Number(x.price)) : [product.price];
+    const abs = (u) => (u && u.startsWith('/') ? `https://www.aureliabeauty.me${u}` : u);
+    const data = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name,
+      ...(product.brand ? { brand: { '@type': 'Brand', name: product.brand } } : {}),
+      ...(product.image ? { image: abs(product.image) } : {}),
+      description: product.description || `${name}${product.note ? ` (${product.note})` : ''}. Original product, cash on delivery across Bangladesh.`,
+      url: pageUrl,
+      offers: {
+        '@type': 'AggregateOffer',
+        priceCurrency: 'BDT',
+        lowPrice: Math.min(...prices),
+        highPrice: Math.max(...prices),
+        offerCount: prices.length,
+        availability: product.stock === 0 ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+      },
+    };
+    const tag = document.createElement('script');
+    tag.type = 'application/ld+json';
+    tag.text = JSON.stringify(data);
+    document.head.appendChild(tag);
+    const canon = document.querySelector('link[rel="canonical"]');
+    const prevCanon = canon?.getAttribute('href');
+    canon?.setAttribute('href', pageUrl);
+    const desc = document.querySelector('meta[name="description"]');
+    const prevDesc = desc?.getAttribute('content');
+    desc?.setAttribute('content', `${name} — ${formatTaka(Math.min(...prices))}${prices.length > 1 ? '+' : ''}. Original product, cash on delivery across Bangladesh. Shop at Aurelia.`);
+
+    return () => {
+      document.title = 'Aurelia — skincare & hair care shop in Bangladesh';
+      tag.remove();
+      if (canon && prevCanon) canon.setAttribute('href', prevCanon);
+      if (desc && prevDesc) desc.setAttribute('content', prevDesc);
+    };
   }, [product.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const types = typesOf(product);
